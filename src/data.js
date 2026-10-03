@@ -1,3 +1,4 @@
+import {assetUrl} from './asset-url';
 export const rooms = [
  {id:0, number:'01', title:'낮은 하늘', en:'A LOWER SKY', x:0,z:0,color:0xffd4a2, sculpture:'통과하지 못한 문', artist:'서이안', medium:'석회석, 두 개의 문틀 · 2026', painting:'문 너머의 저녁', note:'문을 통과하면 다른 곳에 도착할 것이라 믿었다. 그러나 이 문은 어디에도 연결되지 않는다. 두 개의 어긋난 틀 사이에, 아직 떠나지 못한 시간이 남아 있다.'},
  {id:1, number:'02', title:'잠든 정원', en:'THE SLEEPING GARDEN', x:22,z:0,color:0xe9e4ce, sculpture:'중력 없는 가지', artist:'한서림', medium:'황동, 얇은 알루미늄, 돌 · 2026', painting:'밤에만 자라는 것들', note:'뿌리는 돌 속에 잠들고, 잎은 공중에서 천천히 흔들린다. 정원은 사람이 떠난 뒤에야 제 속도로 자란다. 움직임을 재촉하지 않고 조금 더 머물러 보자.'},
@@ -7,4 +8,4 @@ export const rooms = [
  {id:5, number:'06', title:'깨어나기 직전', en:'BEFORE WAKING', x:0,z:-22,color:0xffedcf, sculpture:'다음 장면의 입구', artist:'차은오', medium:'석고, 빛, 비스듬한 문 · 2026', painting:'아무 일도 없는 아침', note:'꿈의 마지막 장면은 늘 입구와 닮아 있다. 빛이 닿는 가장자리를 따라, 이곳에서 본 것들이 서서히 희미해진다. 남는 것은 형태보다 오래 지속되는 감각이다.'}
 ];
 export const artInfo = (id,kind='sculpture') => ({...rooms[id],kind,name:kind==='painting'?rooms[id].painting:rooms[id].sculpture,medium:kind==='painting'?'디지털 회화 · 2026':rooms[id].medium});
-export const paintingUrl = id => id === 0 ? '/art/painting-match.webp' : `/art/painting-match-${String(id+1).padStart(2,'0')}.webp`;
+export const paintingUrl = id => assetUrl(id === 0 ? '/art/painting-match.webp' : `/art/painting-match-${String(id+1).padStart(2,'0')}.webp`);

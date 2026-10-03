@@ -1,3 +1,4 @@
+import {assetUrl} from './asset-url';
 import React,{useEffect,useRef,useState} from 'react';
 import './exhibition-loader.css';
 
@@ -37,7 +38,7 @@ export default function ExhibitionLoader({progress,ready,failed,onComplete,onVis
   return()=>{clearTimeout(departureTimer);clearTimeout(completeTimer);skipJourney.current=null;};
  },[ready,failed]);
  return <section ref={host} className={`exhibition-loader ${visible?'art-ready':''} ${leaving?'is-leaving':''}`} aria-label="전시 로딩" aria-busy={!ready&&!failed} style={{'--journey-duration':`${JOURNEY_MS}ms`}}>
-  <div className="loader-camera" aria-hidden="true"><img className="loader-backplate" src="/loading/tunnel.webp" alt="" fetchPriority="high"/></div>
+  <div className="loader-camera" aria-hidden="true"><img className="loader-backplate" src={assetUrl('/loading/tunnel.webp')} alt="" fetchPriority="high"/></div>
   <div className="loader-top"><svg className="loader-mark" viewBox="0 0 48 64" role="img" aria-label="AFTERIMAGE"><path d="M4 61V13L31 3V54"/><path d="M14 63V22L46 11V62"/></svg><div><b>잔상</b><span>3D EXHIBITION</span></div></div>
   <h1 className="loader-wordmark">AFTERIMAGE</h1>
   <div className="loader-bottom"><div className="loader-information"><p>여섯 개의 장면을 깨우는 중</p><div className="loader-rail" role="progressbar" aria-label="전시 준비 진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>{Array.from({length:6},(_,i)=><span key={i}><i style={{transform:`scaleX(${Math.max(0,Math.min(1,value/100*6-i))})`}}/></span>)}</div><div className="loader-status"><span className="loader-phase" role="status">{failed?'전시 공간을 열 수 없어요':ready?'전시로 들어가는 중':progress.label}</span>{ready&&!leaving&&<button className="loader-skip" onClick={()=>skipJourney.current?.()}>전시 바로 보기</button>}</div></div><div className="loader-number" aria-hidden="true">{String(value).padStart(2,'0')}<small>%</small></div></div>

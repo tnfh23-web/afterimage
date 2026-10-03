@@ -2,6 +2,9 @@
 
 여섯 개의 연결된 방을 자유롭게 걷는 가상의 초현실 아트 전시. React19, Vite7, Three.js. WebGL로 벽/바닥/복도/조각/입구 로고를 실제 geometry로 렌더링합니다. 전시 공간은 실제 3D이며, 입장 전 로딩 연출에는 전용으로 생성한 터널 배경 이미지를 사용합니다.
 
+## 온라인 전시
+[AFTERIMAGE 관람하기](https://tnfh23-web.github.io/afterimage/)
+
 ## 실행
 Node.js22.12 이상. `npm install`, `npm run dev`. http://127.0.0.1:4174/
 배포용 파일 생성: `npm run build`. dist 폴더를 정적 호스팅에 올릴 수 있습니다.
@@ -50,3 +53,8 @@ Logo exports: public/logo.svg (all paths, no external font), public/logo.glb (so
 로딩 배경과 글꼴이 먼저 표시된 뒤 3D 초기화를 시작합니다. 건물 생성·텍스처 업로드·셰이더 준비 사이에 브라우저가 그릴 시간을 주고, 셰이더는 실제 후처리와 같은 선형 렌더 타깃에서 종류별로 나누어 준비합니다. 깊이 그림자와 후처리 셰이더도 미리 준비합니다. 로딩 중 전시의 지속 렌더는 쉽니다. 매 프레임 React 상태 갱신 없이 CSS transform으로 전진하므로 준비 작업과 겹치는 비용을 줄였습니다. 같은 PC의 짧은 로컬 측정에서 로딩 중 최대 프레임 간격이 약 1.6초에서 약 67ms로 감소했습니다. 캐시·장치·동시 실행 탭에 따라 달라지는 관측값이며 모든 기기의 고정 프레임 속도를 보장하지 않습니다.
 
 소개페이지 입체 로고 회전 속도는 1.05에서 1.55로 약 48% 높였습니다. 드래그 중 멈춤, 부드러운 재개, 화면 밖 렌더 중단, 움직임 감소는 유지합니다.
+
+## GitHub Pages 배포
+공개 저장소의 main 브랜치에 push하면 .github/workflows/deploy.yml이 Node.js 22에서 npm ci와 npm run build:pages를 실행하고 GitHub Pages에 자동 배포합니다. 로컬 개발 주소는 그대로 유지하며 배포 빌드만 /afterimage/ 하위 경로를 사용합니다. 회화·텍스처·폰트·로딩 배경·3D 로고·소개 화면 자산은 같은 기준 경로로 제공됩니다. GitHub Pages는 이 공개 저장소에서 무료로 사용하며 별도의 유료 서버나 도메인을 추가하지 않습니다.
+
+배포 빌드 미리 보기: npm run build:pages 후 npm run preview -- --port 4176 --base=/afterimage/ 로 실행하고 http://127.0.0.1:4176/afterimage/ 를 엽니다.
