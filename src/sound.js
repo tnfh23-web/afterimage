@@ -1,7 +1,7 @@
-// An original, continuously scheduled ambient score. No network audio or autoplay.
-// Everything is created only after the visitor explicitly turns sound on.
+// An original ambient score, enabled by default and unlocked by a user gesture.
+// No audio resources are allocated before the visitor interacts with the page.
 export function createSound(onState) {
- let context,master,filter,verb,delay,noise,active=false,volume=.35,room=0;
+ let context,master,filter,verb,delay,noise,active=true,volume=.35,room=0;
  let scheduler,fadeTimer,nextBeat=0,beat=0,disposed=false,request=0;
  const voices=new Set();
  const frequency=midi=>440*Math.pow(2,(midi-69)/12);
@@ -43,7 +43,7 @@ export function createSound(onState) {
    nextBeat+=beatDuration;beat++;
   }
  }
- function notify(){if(!disposed)onState(active&&context?.state==='running'&&!document.hidden?'playing':active?'paused':'off');}
+ function notify(){if(!disposed)onState(!active?'off':!context?'waiting':context.state==='running'&&!document.hidden?'playing':'paused');}
  async function setEnabled(value){
   if(disposed)return;
   const attempt=++request;
@@ -65,6 +65,7 @@ export function createSound(onState) {
  document.addEventListener('visibilitychange',visibility);
  return {
   setEnabled,
+  activate(){if(active&&!disposed&&!document.hidden&&context?.state!=='running')return setEnabled(true);},
   setVolume(value){volume=Math.max(0,Math.min(1,value));if(context&&active)master.gain.setTargetAtTime(volume,context.currentTime,.08);},
   setRoom(value){room=value;if(context)filter.frequency.setTargetAtTime(value===4?1450:2200,context.currentTime,1.5);},
   cue(){if(active&&context?.state==='running')tone(81,context.currentTime,1.4,.025,'sine',0,.018);},
