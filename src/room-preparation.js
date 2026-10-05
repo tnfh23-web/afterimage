@@ -3,7 +3,7 @@ import {compileVariants,preparationFrame} from './preparation-scheduler';
 
 // A tiny offscreen draw allocates geometry and shadow resources before a room
 // is visited. Parallel shader compilation finishes before we ask the GPU to draw.
-export async function prepareRooms({renderer,scene,camera,rooms,activate,position,target,progress,isDisposed}){
+export async function prepareRooms({renderer,scene,camera,rooms,initialZone=0,activate,position,target,progress,isDisposed}){
  const warmTarget=new WebGLRenderTarget(64,64,{depthBuffer:true});
  const savedPosition=camera.position.clone(),savedQuaternion=camera.quaternion.clone();
  const oldTarget=renderer.getRenderTarget();
@@ -27,7 +27,7 @@ export async function prepareRooms({renderer,scene,camera,rooms,activate,positio
  }finally{
   if(!isDisposed()){
    renderer.setRenderTarget(oldTarget);camera.position.copy(savedPosition);camera.quaternion.copy(savedQuaternion);
-   activate(0);
+   activate(initialZone);
    renderer.shadowMap.needsUpdate=true;
   }
   warmTarget.dispose();

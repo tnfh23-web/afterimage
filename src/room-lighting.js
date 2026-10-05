@@ -10,5 +10,6 @@ export const roomLighting = [
  {name:'접힘을 가르는 금빛',sky:0xe6c394,ground:0x383b59,ambient:.36,environment:.29,strip:0xffdba5,key:{color:0xffdda5,power:244,position:[-3,4.7,.6],angle:.66,softness:.3},ceiling:{color:0xb1aecb,power:14},fill:{color:0xa8b4e2,power:29,position:[4,3.5,-2]},wash:{color:0xfff5e8,power:113}},
  {name:'균형의 옅은 물빛',sky:0xc4dcd6,ground:0x48635f,ambient:.65,environment:.4,strip:0xd8ebe1,key:{color:0xf3f4e5,power:182,position:[1,4.8,2.6],angle:.9,softness:.94},ceiling:{color:0xb5d2c6,power:26},fill:{color:0xa8c9c3,power:34,position:[-4,3.8,1]},wash:{color:0xfff7e8,power:119}},
  {name:'안개의 청회색',sky:0xc0d5e8,ground:0x455267,ambient:.72,environment:.34,strip:0xd8e5f3,key:{color:0xe3ecf6,power:161,position:[0,4.8,1.8],angle:.98,softness:1},ceiling:{color:0xa9c4de,power:27},fill:{color:0xb9cfec,power:36,position:[-4,3.8,1]},wash:{color:0xf1f6ff,power:124}},
- {name:'숨의 샴페인빛',sky:0xf1c2b3,ground:0x65404f,ambient:.48,environment:.33,strip:0xffd8c7,key:{color:0xffdfc1,power:211,position:[3.1,4.7,-2.6],angle:.8,softness:.86},ceiling:{color:0xe2b8c3,power:24},fill:{color:0xe9b7c3,power:31,position:[-4,3.4,2]},wash:{color:0xfff3eb,power:119}}
-];
+ {name:'숨의 샴페인빛',sky:0xf1c2b3,ground:0x65404f,ambient:.48,environment:.33,strip:0xffd8c7,key:{color:0xffdfc1,power:211,position:[3.1,4.7,-2.6],angle:.8,softness:.86},ceiling:{color:0xe2b8c3,power:24},fill:{color:0xe9b7c3,power:31,position:[-4,3.4,2]},wash:{color:0xfff3eb,power:119}},
+ {name:'천창의 부드러운 자연광',sky:0xfff7ec,ground:0xc8b8a4,ambient:.65,environment:.35}
+].map((profile,id)=>id===10?profile:{...profile,ambient:profile.ambient+.18,environment:profile.environment+.07});

@@ -1,16 +1,19 @@
 import React from 'react';
-import {rooms,connections} from './data';
+import {rooms} from './data';
+import {atrium,passages,ATRIUM_ID} from './building-layout';
 
-const xs=rooms.map(r=>r.x),zs=rooms.map(r=>r.z);
-const minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
-const point=r=>({x:65+(r.x-minX)/(maxX-minX||1)*570,y:65+(maxZ-r.z)/(maxZ-minZ||1)*130});
-
-export default function ExhibitionPlan({selected,onSelect,className=''}){
- return <svg className={className} viewBox="0 0 700 260" role={onSelect?'group':'img'} aria-label={`${rooms.length}개 전시실과 연결 복도`}>
-  {connections.map(([a,b])=>{const A=point(rooms[a]),B=point(rooms[b]);return <path key={`${a}-${b}`} d={`M${A.x} ${A.y}L${B.x} ${B.y}`} fill="none" stroke="#787a72" strokeOpacity=".5" strokeWidth="16"/>;})}
-  {rooms.map(r=>{const p=point(r),chosen=selected===r.id;return <g key={r.id} role={onSelect?'button':undefined} tabIndex={onSelect?0:undefined} aria-label={onSelect?`${r.number} ${r.title} 미리 보기`:undefined} aria-pressed={onSelect?chosen:undefined} onClick={onSelect?()=>onSelect(r.id):undefined} onKeyDown={onSelect?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(r.id);}}:undefined}>
-   <rect x={p.x-46} y={p.y-37} width="92" height="74" fill={chosen?'#eeeae2':'#252927'} stroke="#bcb9b1"/>
-   <text x={p.x} y={p.y+7} textAnchor="middle" fill={chosen?'#181a19':'#eeeae2'}>{r.number}</text>
-  </g>;})}
+const scale=6,point=([x,z])=>[350+x*scale,300+z*scale];
+export default function ExhibitionPlan({selected,onSelect,onAtrium,className=''}){
+ const zone=(room,handler)=>{
+  const [x,y]=point([room.x,room.z]),chosen=selected===room.id,isHall=room.id===ATRIUM_ID;
+  return <g key={room.id} role={handler?'button':undefined} tabIndex={handler?0:undefined} aria-label={handler?isHall?'중앙 채광 홀 이동':`${room.number} ${room.title} 선택`:undefined} aria-pressed={handler?chosen:undefined} onClick={handler?()=>handler(room.id):undefined} onKeyDown={handler?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();handler(room.id);}}:undefined}>
+   <rect x={x-room.w*scale/2} y={y-room.d*scale/2} width={room.w*scale} height={room.d*scale} fill={chosen?'#eeeae2':isHall?'#393d37':'#252927'} stroke="#bcb9b1" strokeWidth="1.4"/>
+   <text x={x} y={y+(isHall?-4:7)} textAnchor="middle" fill={chosen?'#181a19':'#eeeae2'} style={{fontSize:isHall?14:22}}>{room.number}</text>
+   {isHall&&<text x={x} y={y+20} textAnchor="middle" fill={chosen?'#181a19':'#eeeae2'} style={{fontSize:14}}>채광 홀</text>}
+  </g>;
+ };
+ return <svg className={`exhibition-plan ${className}`} viewBox="0 0 700 620" role={onSelect||onAtrium?'group':'img'} aria-label="중앙 채광 홀과 두 순환 동선으로 연결된 10개 전시실">
+  {passages.map(({a,b,points})=><path key={`${a}-${b}`} d={points.map((p,i)=>`${i?'L':'M'}${point(p).join(' ')}`).join(' ')} fill="none" stroke="#787a72" strokeWidth={4*scale} strokeLinejoin="miter"/>)}
+  {rooms.map(r=>zone(r,onSelect))}{zone(atrium,onAtrium)}
  </svg>;
 }

@@ -1,0 +1,34 @@
+.app>header,.app>footer,.app>.intro{color:#302e29}
+.app>header .brand img{filter:brightness(.16)}
+.app>header nav button:hover{color:#161612;border-color:#302e29}
+.app>header button:focus-visible,.app>header a:focus-visible,.app>footer button:focus-visible{outline-color:#302e29}
+.app>footer{border-color:#302e2945;background:linear-gradient(transparent,#ece5d822)}
+.app>footer .motion{color:#514d44;border-color:#302e2955}
+.app>footer button:hover{color:#111}
+.app>.intro .entry{background:#302e29;color:#f1ece3!important}
+.app>.intro .entry:hover{background:#171714}
+.app>.intro .text-action{color:#302e29;border-color:#302e29}
+.app>.reticle{background:#302e2990;box-shadow:0 0 0 1px #fff6}
+.exhibition-plan g[role=button]{cursor:pointer;outline:none}
+.exhibition-plan g[role=button]:hover rect{stroke:#fff;stroke-width:2.5}
+.exhibition-plan g[role=button]:focus-visible rect{stroke:#fff;stroke-width:3.5}
+.lobby-label b{font-size:16px!important;letter-spacing:.12em}
+.lobby-label strong{margin-left:12px}
+@media(max-width:700px),(pointer:coarse){
+ .touch-movement>span,.touch-look-hint,.touch-movement-label small{color:#302e29;text-shadow:0 1px 3px #fff9}
+ .touch-movement-label .run-label{color:#171714}
+ .touch-jump{color:#fff}
+ .joystick{border-color:#302e2966;background:#302e2940}
+}
+
+.app>footer .sound-toggle{color:#302e29}
+
+.app>footer .sound-toggle.playing svg{animation:none}
+
+.app>header{background:linear-gradient(#f1ece3cc,#f1ece300)}
+.app>footer{background:linear-gradient(#f1ece300,#f1ece3dd)}
+@media(max-width:700px),(pointer:coarse){
+ .touch-movement-label,.touch-look-hint{background:#f1ece3df;padding:4px 8px;border-radius:2px;text-shadow:none}
+ .touch-movement-label small{font-size:10px;text-shadow:none}
+}
+@media(max-width:700px),(pointer:coarse){.touch-look-hint{max-width:142px;word-break:keep-all;text-wrap:balance}}

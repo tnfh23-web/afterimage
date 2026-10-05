@@ -8,6 +8,7 @@ This project contains a fictional exhibition. Its artist names and artwork descr
 | Cinematic loader concept and tunnel backdrop | Generated with OpenAI ImageGen; backdrop edited from the loading concept to remove UI while preserving its architecture, paintings and light. Used only during the entry transition, not as the navigable gallery. The atmospheric paintings in this backdrop are distinct from the ten gallery paintings. |
 | Paintings and reconstructed painting-match variants | Generated with OpenAI ImageGen for this project |
 | Stone, concrete, bronze and rock texture images | Generated for this project; several procedural textures are also created in code |
+| New gallery architecture/material concepts and seamless pale limestone | Generated with OpenAI ImageGen for this project; source references in design/new-gallery-*.png and design/limestone-clean-source.png. Served floor texture is public/art/limestone-clean.webp. The navigable building is real Three.js geometry. |
 | Production 3D sculptures and architectural meshes | Project-authored Three.js geometry code; no imported external sculpture mesh |
 | Logo bitmap | Generated for this project |
 | Logo SVG and GLB | Project-authored vector/solid geometry based on the project logo |

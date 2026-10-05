@@ -1,5 +1,6 @@
 import {assetUrl} from './asset-url';
-export const rooms = [
+import {galleryLayout} from './building-layout';
+const artworks = [
  {id:0, number:'01', title:'낮은 하늘', en:'A LOWER SKY', x:0,z:0,color:0xffd4a2, sculpture:'통과하지 못한 문', artist:'서이안', medium:'석회석, 두 개의 문틀 · 2026', painting:'문 너머의 저녁', sculptureNote:'서로 어긋난 두 개의 석회석 문틀이 한 방향을 바라본다. 겹쳐 보이던 틀은 관람자가 옆으로 움직이면 두께와 간격을 드러낸다. 통과할 수 없는 문 사이에, 아직 떠나지 못한 시간이 남아 있다.', paintingNote:'해가 낮게 내려앉은 황량한 땅 위에 문틀 하나가 서 있다. 구름과 바위에는 저녁빛이 번지고, 열린 문 너머에도 같은 풍경이 이어진다. 다른 곳으로 향하려는 기대와 제자리에 남은 장면을 함께 그렸다.'},
  {id:1, number:'02', title:'잠든 정원', en:'THE SLEEPING GARDEN', x:22,z:0,color:0xe9e4ce, sculpture:'중력 없는 가지', artist:'한서림', medium:'황동, 얇은 알루미늄, 돌 · 2026', painting:'밤에만 자라는 것들', sculptureNote:'돌에서 뻗은 가느다란 황동 가지 위로 얇은 잎들이 펼쳐진다. 공중에 매달린 가지는 아주 작은 움직임으로 정원의 시간을 만든다. 단단한 뿌리와 가벼운 잎 사이에서, 중력은 잠시 느슨해진다.', paintingNote:'보름달 아래의 정원에 흰 꽃과 어두운 나무가 함께 놓여 있다. 물에 비친 달빛은 오래된 아치와 연못의 경계를 잇는다. 사람이 사라진 밤에도 조용히 자라는 생명의 장면이다.'},
  {id:2, number:'03', title:'얼굴 없는 초상', en:'PORTRAITS WITHOUT A FACE', x:44,z:0,color:0xffc993, sculpture:'이름을 잊은 세 사람', artist:'윤모래', medium:'구리, 주름진 석고 · 2026', painting:'알 수 없는 초상', sculptureNote:'세 개의 흉상은 서로 다른 높이와 방향으로 놓여 있다. 얼굴을 덮은 천의 주름과 고개를 기울인 각도는 가까이 볼수록 다른 인상을 남긴다. 표정을 지운 자리에서, 각 인물을 구별하는 것은 자세와 거리다.', paintingNote:'베일에 가려진 얼굴 뒤로 구릿빛 원이 떠오른다. 어두운 바탕, 투명하게 겹친 천과 거친 금속의 표면이 한 인물 안에서 만난다. 이름과 표정이 사라진 뒤에도 남는 존재의 흔적을 그렸다.'},
@@ -11,7 +12,7 @@ export const rooms = [
  {id:8, number:'09', title:'여백의 층', en:'LAYERS OF SILENCE', x:88,z:-22,color:0xd5e5ef, sculpture:'말하지 않은 일곱 문장', artist:'백여린', medium:'석고, 일곱 개의 곡면 · 2026', painting:'안개가 지나는 자리', sculptureNote:'높이가 다른 일곱 개의 석고 곡면이 간격을 두고 나란히 놓인다. 관람자가 옆으로 움직일 때마다 면이 겹쳐지고 빈틈이 다시 열린다. 말하지 않은 문장처럼, 형태 사이의 거리가 감상의 리듬을 만든다.', paintingNote:'청회색 안개가 물과 산의 윤곽을 여러 겹으로 흐린다. 어두운 전경에서 밝은 먼 풍경으로 이어지는 붓질은 경계를 그리기보다 지운다. 빈 공간이 풍경을 연결하는 순간을 층처럼 쌓았다.'},
  {id:9, number:'10', title:'숨의 결', en:'THE SHAPE OF BREATH', x:66,z:-22,color:0xffdcc7, sculpture:'천천히, 다시', artist:'정하루', medium:'석고, 황동, 나선형 띠 · 2026', painting:'빛이 돌아오는 시간', sculptureNote:'넓은 석고 띠가 나선으로 올라가며 안과 밖의 면을 번갈아 드러낸다. 황동 가장자리는 띠의 흐름을 따라 이어진다. 같은 길을 오가면서도 조금씩 달라지는 숨처럼, 하나의 형태 안에 반복과 여유를 담았다.', paintingNote:'복숭아빛 구름 사이로 커다란 해가 천천히 드러난다. 구름의 그늘은 회보라색으로 남고, 밝은 부분은 부드럽게 번진다. 전시의 마지막 장면을 끝이 아닌, 다시 빛이 돌아오는 시간으로 그렸다.'}
 ];
-// The original loop remains intact; the eastern loop opens from rooms 03/04.
-export const connections=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[2,6],[6,7],[7,8],[8,9],[9,3]];
+export const rooms=artworks.map((room,id)=>({...room,...galleryLayout[id]}));
+export {connections} from './building-layout';
 export const artInfo = (id,kind='sculpture') => ({...rooms[id],kind,name:kind==='painting'?rooms[id].painting:rooms[id].sculpture,medium:kind==='painting'?'디지털 회화 · 2026':rooms[id].medium,note:kind==='painting'?rooms[id].paintingNote:rooms[id].sculptureNote});
 export const paintingUrl = id => assetUrl(id === 0 ? '/art/painting-match.webp' : `/art/painting-match-${String(id+1).padStart(2,'0')}.webp`);
