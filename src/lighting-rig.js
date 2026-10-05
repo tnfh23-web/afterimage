@@ -1,7 +1,7 @@
 import {PointLight,SpotLight,Vector3} from 'three';
 
 // Keep the shader's light/shadow counts constant across every room. The
-// fixtures retain their original colour, intensity and world-space placement.
+// fixtures retain each room's colour, intensity and world-space placement.
 export function lightingRig(scene,groups,corridors){
  scene.updateMatrixWorld(true);
  const describe=light=>({light,position:light.getWorldPosition(new Vector3()),target:light.isSpotLight?light.target.getWorldPosition(new Vector3()):null});

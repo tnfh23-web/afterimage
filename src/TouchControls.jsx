@@ -8,9 +8,10 @@ export default function TouchControls({api}){
   const length=Math.hypot(dx,dy),clamp=length>radius?radius/length:1;
   handle.current.style.transform=`translate(${dx*clamp}px,${dy*clamp}px)`;
   const amount=Math.max(0,Math.min(1,(length/radius-.12)/.88));
+  stick.current.dataset.running=String(amount>.75);
   api.current?.setTouchVector(length?dx/length*amount:0,length?-dy/length*amount:0);
  };
- const reset=()=>{pointer.current=null;api.current?.stopTouch();if(handle.current)handle.current.style.transform='translate(0,0)';if(stick.current)stick.current.dataset.active='false';};
+ const reset=()=>{pointer.current=null;api.current?.stopTouch();if(handle.current)handle.current.style.transform='translate(0,0)';if(stick.current){stick.current.dataset.active='false';stick.current.dataset.running='false';}};
  useEffect(()=>{
   const blur=()=>{reset();jumpPointer.current=null;if(jumpButton.current)jumpButton.current.dataset.active='false';};
   const visibility=()=>{if(document.hidden)blur();};
@@ -19,14 +20,14 @@ export default function TouchControls({api}){
  },[]);
  const prevent=e=>e.preventDefault();
  return <div className="touch-controls" onContextMenu={prevent}>
-  <div className="touch-movement"><div ref={stick} className="joystick" role="group" aria-label="이동 조이스틱" data-active="false"
+  <div className="touch-movement"><div ref={stick} className="joystick" role="group" aria-label="이동 조이스틱. 조금 밀면 걷기, 끝까지 밀면 달리기" data-active="false" data-running="false"
    onPointerDown={e=>{if(pointer.current!==null||e.button!==0)return;e.preventDefault();pointer.current=e.pointerId;e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.active='true';move(e);}}
    onPointerMove={e=>{if(e.pointerId===pointer.current){e.preventDefault();move(e);}}}
    onPointerUp={e=>{if(e.pointerId===pointer.current){e.preventDefault();reset();}}}
    onPointerCancel={e=>{if(e.pointerId===pointer.current)reset();}}
    onLostPointerCapture={e=>{if(e.pointerId===pointer.current)reset();}}>
    <div className="joystick-track" aria-hidden="true"/><div ref={handle} className="joystick-handle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16m-11-5 3-3 3 3m-6 10 3 3 3-3M7 9l-3 3 3 3m10-6 3 3-3 3"/></svg></div>
-  </div><span>이동</span></div>
+  </div><span className="touch-movement-label"><b className="walk-label">이동</b><b className="run-label">달리는 중</b><small>끝까지 밀어 달리기</small></span></div>
   <div className="touch-actions"><span className="touch-look-hint">화면을 드래그해 둘러보기</span><button ref={jumpButton} className="touch-jump" aria-label="점프"
    onPointerDown={e=>{if(jumpPointer.current!==null||e.button!==0)return;e.preventDefault();jumpPointer.current=e.pointerId;e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.active='true';api.current?.jump();}}
    onPointerUp={e=>{if(e.pointerId===jumpPointer.current){e.preventDefault();jumpPointer.current=null;e.currentTarget.dataset.active='false';}}}

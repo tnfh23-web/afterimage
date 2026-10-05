@@ -1,14 +1,16 @@
 import * as T from 'three';
+import {roomLighting} from './room-lighting';
 
 export function roomShell(root,room,doors,mats,cube){
  const obstacles=[];
+ const lighting=roomLighting[room.id],strip=new T.MeshBasicMaterial({color:lighting.strip});
  if(room.id===1){
   cube(root,16,.18,5.4,0,5.1,-5.3,mats.ceiling);cube(root,16,.18,5.4,0,5.1,5.3,mats.ceiling);
   cube(root,5.5,.18,5.2,-5.25,5.1,0,mats.ceiling);cube(root,5.5,.18,5.2,5.25,5.1,0,mats.ceiling);
   const liner=mats.wall.clone();liner.color.set(0x9ea4a6);
   cube(root,5,.16,5.2,0,6.45,0,liner);cube(root,.14,1.4,5.2,-2.5,5.7,0,liner);cube(root,.14,1.4,5.2,2.5,5.7,0,liner);
   cube(root,5,1.4,.14,0,5.7,-2.6,liner);cube(root,5,1.4,.14,0,5.7,2.6,liner);
-  const daylight=new T.PointLight(0xcbd9e1,24,11,2);daylight.position.set(0,5.65,0);root.add(daylight);
+  const daylight=new T.PointLight(lighting.sky,24,11,2);daylight.position.set(0,5.65,0);root.add(daylight);
  }else cube(root,16,.18,16,0,5.1,0,mats.ceiling);
  for(const side of ['north','south','east','west']){
   const alongX=side==='north'||side==='south',edge=side==='north'||side==='west'?-8:8,opening=doors.has(side);
@@ -27,12 +29,12 @@ export function roomShell(root,room,doors,mats,cube){
  }
  if(room.id===0){cube(root,2,5,.4,-6.7,2.5,4.6,mats.wall);obstacles.push({x:room.x-6.7,z:room.z+4.6,w:2,d:.4});}
  for(const x of [-6.8,6.8]){
-  cube(root,.16,.015,1.8,x,.12,-7.62,mats.light);
-  const uplight=new T.PointLight(room.color,6.5,5,2);uplight.position.set(x,.35,-7.3);root.add(uplight);
+  cube(root,.16,.015,1.8,x,.12,-7.62,strip);
+  const uplight=new T.PointLight(lighting.fill.color,6.5,5,2);uplight.position.set(x,.35,-7.3);root.add(uplight);
  }
  if(room.id===3||room.id===5){
-  cube(root,11,.025,.055,1,4.9,-7.53,mats.light);
-  for(const x of [-3,2,6]){const wash=new T.PointLight(room.color,8,7,2);wash.position.set(x,4.5,-7.2);root.add(wash);}
+  cube(root,11,.025,.055,1,4.9,-7.53,strip);
+  for(const x of [-3,2,6]){const wash=new T.PointLight(lighting.ceiling.color,8,7,2);wash.position.set(x,4.5,-7.2);root.add(wash);}
  }
  return obstacles;
 }

@@ -11,6 +11,12 @@
  .joystick-handle{position:absolute;left:calc(50% - 27px);top:calc(50% - 27px);width:54px;height:54px;display:grid;place-items:center;border:1px solid #eeeae270;border-radius:50%;background:#eeeae2e8;color:#181a19;pointer-events:none;will-change:transform}
  .joystick-handle svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
  .joystick[data-active=true]{border-color:#eeeae278;background:#181c1a90}
+ .joystick[data-running=true]{border-color:#eeeae2bf;box-shadow:0 0 0 4px #eeeae218}
+ .touch-movement-label{text-align:center;line-height:1.5}
+ .touch-movement-label b{font-weight:400}.touch-movement-label small{display:block;font-size:9px;color:#eeeae2a6}
+ .touch-movement-label .run-label{display:none;color:#eeeae2}
+ .joystick[data-running=true]+.touch-movement-label .walk-label{display:none}
+ .joystick[data-running=true]+.touch-movement-label .run-label{display:inline}
  .touch-actions{display:flex;align-items:flex-end;flex-direction:column;gap:16px;padding-bottom:20px}
  .touch-look-hint{max-width:122px;text-align:right;line-height:1.6}
  .touch-jump{width:68px;height:68px;border-radius:50%;border:1px solid #eeeae27a;background:#181c1a90;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;pointer-events:auto;touch-action:none;padding:0}
@@ -18,6 +24,7 @@
  .touch-jump span{font-size:10px;letter-spacing:.06em}
  .touch-jump[data-active=true]{background:#eeeae2;color:#181a19}
  .art-hint{bottom:calc(258px + env(safe-area-inset-bottom));max-width:calc(100% - 44px);white-space:normal;text-align:left}
+ .art-hint button{white-space:nowrap;flex-shrink:0}
 }
 @media(max-width:380px){.touch-controls{left:18px;right:18px}.joystick{width:104px;height:104px}.touch-jump{width:64px;height:64px}}
 @media(max-height:550px) and (pointer:coarse), (max-height:550px) and (max-width:700px){.touch-controls{bottom:calc(67px + env(safe-area-inset-bottom))}.joystick{width:96px;height:96px}.touch-actions{padding-bottom:14px;gap:8px}.touch-look-hint{display:none}.art-hint{bottom:calc(191px + env(safe-area-inset-bottom))}}
