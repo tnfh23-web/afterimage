@@ -17,6 +17,11 @@ export function galleryWalls(root,room,openings,mats,cube){
   const wall=(span,height,y,along)=>{
    if(span<=0||height<=0)return;
    if(y-height/2<1.75)obstacles.push({x:room.x+(alongX?along:edge),z:room.z+(alongX?edge:along),w:alongX?span:.65,d:alongX?.65:span});
+   if(y-height/2<.1){
+    const inside=edge-Math.sign(edge)*.34;
+    if(alongX)cube(root,span,.065,.025,along,.033,inside,mats.grout);
+    else cube(root,.025,.065,span,inside,.033,along,mats.grout);
+   }
    return alongX?cube(root,span,height,.65,along,y,edge,mats.wall):cube(root,.65,height,span,edge,y,along,mats.wall);
   };
   let cursor=-length/2;
@@ -77,7 +82,7 @@ export function atriumShell(root,room,openings,mats,cube,label){
  const white=mats.wall.clone();white.color.set(0xf7f2e8);
  cube(root,.16,.65,20,-3,8.25,0,white);cube(root,.16,.65,20,3,8.25,0,white);
  for(const z of [-10,-6,-2,2,6,10])cube(root,6,.14,.12,0,8.25,z,mats.black);
- for(const x of [-5.5,5.5]){cube(root,.85,.48,5,x,.24,0,mats.bench);obstacles.push({x,z:0,w:.85,d:5});}
+ for(const x of [-5.5,5.5])obstacles.push({x,z:0,w:.85,d:5});
  for(const [text,x,z,angle] of [['01 — 05',-7.63,-8,Math.PI/2],['06 — 10',7.63,-8,-Math.PI/2]]){
   const plaque=label(text,3.5,1.4);plaque.position.set(x,2.3,z);plaque.rotation.y=angle;root.add(plaque);
  }

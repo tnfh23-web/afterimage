@@ -7,6 +7,7 @@ import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {rooms,paintingUrl} from './data';
 import {ATRIUM_ID,atrium,passages,doorOpenings} from './building-layout';
 import {galleryFloor,galleryPassages,atriumShell} from './building-architecture';
+import {detailMaterials,hallDetails,roomDetails} from './gallery-details';
 import {materials} from './materials';
 import {createSculpture,extrudePortal} from './sculptures';
 import {angularMotion} from './angular-motion';
@@ -28,7 +29,7 @@ export async function createExhibition(host,events,{signal}={}){
  await preparationFrame();
  const pmrem=new T.PMREMGenerator(renderer),env=pmrem.fromScene(new RoomEnvironment(),.04);scene.environment=env.texture;scene.environmentIntensity=.48;
  const camera=new T.PerspectiveCamera(50,host.clientWidth/host.clientHeight,.06,100);camera.rotation.order='YXZ';
- const mats=materials(),selectable=[],animations=[],floorRects=[],obstacles=[],groups=[],roomFloors=[],spots=[],keys=new Set(),ray=new T.Raycaster(),mouse=new T.Vector2();
+ const mats=Object.assign(materials(),detailMaterials()),selectable=[],animations=[],floorRects=[],obstacles=[],groups=[],roomFloors=[],spots=[],keys=new Set(),ray=new T.Raycaster(),mouse=new T.Vector2();
  let prepared=false,current=ATRIUM_ID,enabled=false,presentationVisible=false,motion=!matchMedia('(prefers-reduced-motion: reduce)').matches,disposed=false,frame,drag=null,touch=null,nearest=null,oldHint='',inspect=null,rotate=false,transition=null,elapsed=0,lastScan=0,lastTime=performance.now();
  let jumpHeight=0,jumpVelocity=0;
  const eyeHeight=1.75,gravity=13,jumpSpeed=4.6;
@@ -83,14 +84,14 @@ export async function createExhibition(host,events,{signal}={}){
   const texture=r.id===0?artLoader.load(paintingUrl(r.id)):new T.Texture(placeholder);texture.colorSpace=T.SRGBColorSpace;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());if(r.id!==0){texture.needsUpdate=true;pendingPaintings.push({id:r.id,url:paintingUrl(r.id),texture});}
   const painting=new T.Group();painting.position.set(r.id===0?-.8:r.id===3?4.8:r.id===5?-4.45:-2.7,r.id===5?2.5:2.45,-r.d/2+.4);if(r.id!==3){painting.position.set(r.id===0?-5:-4.75,2.6,-r.d/2+.4);}painting.userData={id:r.id,kind:'painting'};const pw=r.id===2?3.35:r.id===3?1.5:r.id===5?2.8:4.6,ph=r.id===2?4.3:r.id===3?2.1:r.id===5?2.1:3.05;cube(painting,pw+.15,ph+.15,.12,0,0,0,mats.black);cube(painting,pw+.075,.035,.14,0,ph/2+.025,.02,mats.bronze);cube(painting,pw+.075,.035,.14,0,-ph/2-.025,.02,mats.bronze);cube(painting,.035,ph,.14,-pw/2-.025,0,.02,mats.bronze);cube(painting,.035,ph,.14,pw/2+.025,0,.02,mats.bronze);const pm=new T.Mesh(new T.PlaneGeometry(pw,ph),new T.MeshStandardMaterial({map:texture,roughness:.92,emissiveMap:texture,emissive:0xffffff,emissiveIntensity:.045}));pm.position.z=.085;painting.add(pm);root.add(painting);selectable.push(painting);
   const n=label(r.number,.8,.5);n.position.set(6.3,2.1,-r.d/2+.37);root.add(n);const placard=label(r.painting,Math.min(pw,2.5),.5);placard.position.set(painting.position.x,2.6-ph/2-.2,-r.d/2+.37);root.add(placard);
-  const bench=cube(root,3.5,.4,.65,-4,.2,2,mats.bench);obstacles.push({x:r.x-4,z:r.z+2,w:3.5,d:.65});
+  roomDetails(root,r,mats,cube,obstacles);
   if(r.id===3)particleProjection(root,animations,r.d);
   if(r.id===5){const glow=new T.PointLight(0xffdfaa,12,6,2);glow.position.set(1,2.2,-.1);root.add(glow);}
 
   await preparationFrame();if(signal?.aborted){scene.traverse(object=>{object.geometry?.dispose();(Array.isArray(object.material)?object.material:[object.material]).forEach(material=>material?.dispose());});env.dispose();pmrem.dispose();renderer.dispose();canvas.remove();return null;}
  }
  const hall=new T.Group();scene.add(hall);groups.push(hall);floorRects.push({x:atrium.x,z:atrium.z,w:atrium.w,d:atrium.d});
- roomFloors.push(galleryFloor(hall,atrium,mats,cube));obstacles.push(...atriumShell(hall,atrium,doors[ATRIUM_ID],mats,cube,label));
+ roomFloors.push(galleryFloor(hall,atrium,mats,cube));obstacles.push(...atriumShell(hall,atrium,doors[ATRIUM_ID],mats,cube,label));hallDetails(hall,atrium,mats,cube,obstacles);
  const corridorLights=galleryPassages(scene,passages,mats,cube,floorRects,obstacles);
  // One low-resolution planar reflection across the connected building, blended beneath tile material.
  const roomXs=rooms.map(r=>r.x),roomZs=rooms.map(r=>r.z),minX=Math.min(...roomXs),maxX=Math.max(...roomXs),minZ=Math.min(...roomZs),maxZ=Math.max(...roomZs);

@@ -13,6 +13,7 @@ This project contains a fictional exhibition. Its artist names and artwork descr
 | Logo bitmap | Generated for this project |
 | Logo SVG and GLB | Project-authored vector/solid geometry based on the project logo |
 | Music and effects | Project-authored Web Audio synthesis; no downloaded recording |
+| Gallery furniture, oak louvers, olive plants and wall typography | Procedural Three.js geometry and canvas lettering authored for this project in src/gallery-details.js. No external model or additional image assets. |
 | Actual process screenshots | Browser captures of the running project, not concept renderings |
 | Fonts / libraries | Pretendard SIL OFL; Helvetiker original license in public/fonts; Three.js MIT; React MIT; Vite MIT |
 
