@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {mineralRock,curvedLeaf,veiledBust} from './sculpture-detail';
 import {batchSculpture} from './sculpture-batches';
+import {buildExtension} from './extension-sculptures';
 const mesh=(parent,geometry,material,x=0,y=0,z=0)=>{const object=new T.Mesh(geometry,material);object.position.set(x,y,z);object.castShadow=object.receiveShadow=true;parent.add(object);return object;};
 function band(radius,width){const shape=new T.Shape();shape.absarc(0,0,radius,0,Math.PI*2,false);const hole=new T.Path();hole.absarc(0,0,radius-width,0,Math.PI*2,true);shape.holes.push(hole);return new T.ExtrudeGeometry(shape,{depth:.05,bevelEnabled:true,bevelSize:.008,bevelThickness:.008,bevelSegments:2,curveSegments:96});}
 function rib(height){
@@ -10,6 +11,7 @@ function rib(height){
  return new T.ExtrudeGeometry(shape,{depth:.045,bevelEnabled:true,bevelSize:.008,bevelThickness:.006,bevelSegments:2,steps:1});
 }
 export function buildSculpture(id,mats,extrudePortal){
+ if(id>=6)return buildExtension(id,mats);
  const group=new T.Group(),animated=[],{ivory,bronze,plinth,blue,stone}=mats;
  if(id===0){
   mesh(group,new T.BoxGeometry(5.1,.3,2.5),plinth,0,.15,0);
