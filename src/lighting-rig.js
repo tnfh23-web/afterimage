@@ -22,6 +22,8 @@ export function lightingRig(scene,groups,corridors){
  };
  return {shadowSpot:spots[0],activate(id){
   groups.forEach((group,index)=>{group.visible=index===id||neighbors[id].includes(index);});
+  // Only decoration is culled: the connected corridor shell stays continuous.
+  passages.forEach(p=>{if(p.decor)p.decor.visible=p.a===id||p.b===id||neighbors[id].includes(p.a)||neighbors[id].includes(p.b);});
   const active=fixtures[id].filter(f=>f.light.isPointLight);
   for(const neighbor of neighbors[id])active.push(...fixtures[neighbor].filter(f=>f.light.isPointLight&&f.light.userData.peek));
   active.push(...passages.filter(c=>c.a===id||c.b===id));

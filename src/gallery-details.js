@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {benchSeats} from './seating';
 import {curateRoomWalls} from './gallery-wall-curation';
+import {furnishRoom} from './spatial-furnishings';
 
 // All details are static. Shared materials, merged timber and instanced leaves
 // add spatial texture without extra lights, animation or downloaded assets.
@@ -91,4 +92,5 @@ export function roomDetails(root,room,mats,cube,obstacles,seats){
  benchSeats(seats,room,-4,2,3.5,0,[room.x+1,2,room.z-.6]);
  obstacles.push({x:room.x-4,z:room.z+2,w:3.5,d:.7});
  curateRoomWalls(root,room,mats,cube);
+ furnishRoom(root,room,mats,cube,obstacles);
 }

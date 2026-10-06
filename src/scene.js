@@ -99,7 +99,7 @@ export async function createExhibition(host,events,{signal}={}){
  const stairs=cinemaStairs(hall,mats,cube,obstacles,floorRects,label);
  const theatre=createCinema(scene,mats,cube,label,artLoader,floorRects,obstacles,seats);groups.push(theatre.root);
  buildingEnvelope(scene,mats,cube,obstacles);
- const corridorLights=galleryPassages(scene,passages,mats,cube,floorRects,obstacles);
+ const corridorLights=galleryPassages(scene,passages,mats,cube,floorRects,obstacles,seats);
  const bridgeLamp=new T.PointLight(0xffd6a1,10,10,2);bridgeLamp.position.set(10,10.1,-1.7);scene.add(bridgeLamp);corridorLights.push({a:ATRIUM_ID,b:CINEMA_ID,light:bridgeLamp});
  // One low-resolution planar reflection across the connected building, blended beneath tile material.
  const roomXs=rooms.map(r=>r.x),roomZs=rooms.map(r=>r.z),minX=Math.min(...roomXs),maxX=Math.max(...roomXs),minZ=Math.min(...roomZs),maxZ=Math.max(...roomZs);
@@ -142,7 +142,7 @@ export async function createExhibition(host,events,{signal}={}){
  function scanSeats(){
   nearSeat=null;
   if(!seated&&!jumpHeight&&!inspect){
-   const candidates=seats.filter(s=>s.zone===current&&Math.abs(s.floor-groundHeight)<.5&&Math.hypot(s.x-camera.position.x,s.z-camera.position.z)<2.25).sort((a,b)=>Math.hypot(a.x-camera.position.x,a.z-camera.position.z)-Math.hypot(b.x-camera.position.x,b.z-camera.position.z));
+   const candidates=seats.filter(s=>(s.zone===current||s.zones?.includes(current))&&Math.abs(s.floor-groundHeight)<.5&&Math.hypot(s.x-camera.position.x,s.z-camera.position.z)<2.25).sort((a,b)=>Math.hypot(a.x-camera.position.x,a.z-camera.position.z)-Math.hypot(b.x-camera.position.x,b.z-camera.position.z));
    nearSeat=candidates.find(unobstructedSeat)||null;
   }
   publishSeat();
@@ -164,7 +164,7 @@ export async function createExhibition(host,events,{signal}={}){
  function clickedSeat(ndc){
   if(seated)return false;
   ray.setFromCamera(ndc,camera);const point=new T.Vector3();
-  const hits=seats.filter(s=>s.zone===current&&Math.abs(s.floor-groundHeight)<.5&&Math.hypot(s.x-camera.position.x,s.z-camera.position.z)<2.25).map(s=>({seat:s,hit:ray.ray.intersectBox(s.bounds,point)?camera.position.distanceTo(point):Infinity})).sort((a,b)=>a.hit-b.hit);
+  const hits=seats.filter(s=>(s.zone===current||s.zones?.includes(current))&&Math.abs(s.floor-groundHeight)<.5&&Math.hypot(s.x-camera.position.x,s.z-camera.position.z)<2.25).map(s=>({seat:s,hit:ray.ray.intersectBox(s.bounds,point)?camera.position.distanceTo(point):Infinity})).sort((a,b)=>a.hit-b.hit);
   if(hits[0]?.hit<Infinity&&unobstructedSeat(hits[0].seat)){sit(hits[0].seat);return true;}return false;
  }
  function setHint(h){if(h!==oldHint){oldHint=h;events.hint(h);}}

@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {batchRoomArchitecture} from './static-room-batches';
+import {furnishPassage} from './spatial-furnishings';
 
 export function galleryFloor(root,room,mats,cube){
  const floor=cube(root,room.w,.15,room.d,0,-.085,0,mats.floor);
@@ -39,9 +40,9 @@ export function galleryWalls(root,room,openings,mats,cube){
  return obstacles;
 }
 
-export function galleryPassages(scene,passages,mats,cube,floorRects,obstacles){
+export function galleryPassages(scene,passages,mats,cube,floorRects,obstacles,seats){
  const lights=[];
- for(const passage of passages){
+ for(const [index,passage] of passages.entries()){
   const root=new T.Group();scene.add(root);
   const wall=(w,d,x,z)=>{cube(root,w,3.9,d,x,1.95,z,mats.wall);obstacles.push({x,z,w,d});};
   let longest=0,lightPoint;
@@ -67,7 +68,7 @@ export function galleryPassages(scene,passages,mats,cube,floorRects,obstacles){
     else wall(.25,4,x+(side==='west'?-2:2),z);
    }
   }
-  const light=new T.PointLight(0xfff0db,42,25,2);light.position.set(lightPoint[0],3.35,lightPoint[1]);root.add(light);lights.push({...passage,light});
+  const light=new T.PointLight(0xfff0db,42,25,2);light.position.set(lightPoint[0],3.35,lightPoint[1]);root.add(light);const decor=furnishPassage(root,passage,mats,cube,obstacles,seats,index);lights.push({...passage,light,decor});
   batchRoomArchitecture(root);
  }
  return lights;
