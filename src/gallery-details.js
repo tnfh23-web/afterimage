@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {benchSeats} from './seating';
 
 // All details are static. Shared materials, merged timber and instanced leaves
 // add spatial texture without extra lights, animation or downloaded assets.
@@ -57,11 +58,12 @@ function olive(root,x,z,mats,cube,obstacles){
  leaves.receiveShadow=true;root.add(leaves);obstacles.push({x,z,w:.9,d:.9});
 }
 
-export function hallDetails(root,room,mats,cube,obstacles){
+export function hallDetails(root,room,mats,cube,obstacles,seats){
  // Stay well away from the four door apertures at z +/-14 and keep the
  // central six-metre axis clear, including the default entrance position.
  for(const side of [-1,1]){
   timberBench(root,side*5.5,0,5,Math.PI/2,mats,cube);
+  benchSeats(seats,room,side*5.5,0,5,Math.PI/2,[0,2.1,-4]);
   for(const z of side===1?[9.5,4.3]:[-7.5,4.3])olive(root,side*6.15,z,mats,cube,obstacles);
   for(let i=0;i<36;i++)cube(root,.09,4.8,.075,side*7.61,2.8,-4.3+i*.245,mats.oak);
   cube(root,.035,.02,9,side*7.5,.25,0,mats.light);
@@ -83,8 +85,9 @@ export function hallDetails(root,room,mats,cube,obstacles){
  for(const x of [-6.7,6.7])cube(root,.13,6.4,.1,x,3.2,-16.61,mats.oak);
 }
 
-export function roomDetails(root,room,mats,cube,obstacles){
+export function roomDetails(root,room,mats,cube,obstacles,seats){
  timberBench(root,-4,2,3.5,0,mats,cube);
+ benchSeats(seats,room,-4,2,3.5,0,[room.x+1,2,room.z-.6]);
  obstacles.push({x:room.x-4,z:room.z+2,w:3.5,d:.7});
  // Install the room title on a side wall, clear of the painting, sculpture and
  // north/south connections. Wall-mounted elements have no walking footprint.

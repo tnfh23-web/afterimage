@@ -1,33 +1,20 @@
-<!doctype html><meta charset="utf-8"><title>AFTERIMAGE film production</title>
-<style>body{background:#111;color:#eee;font:16px system-ui;margin:24px}canvas{width:80vw;max-width:960px}button{padding:15px;margin:15px 0}#status{padding:12px}</style>
-<h1>여운의 문 — original 48-second film</h1><div id="formats"></div><canvas width="1280" height="720"></canvas><br><button id="start">영상 제작 시작</button><div id="status">준비됨</div>
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>AFTERIMAGE film production</title>
+<style>body{background:#10151a;color:#ede8de;font:14px system-ui;margin:24px}canvas{width:min(85vw,1100px);display:block}button{padding:12px 18px;margin:14px 10px 14px 0;background:#dcc7a6;border:0;color:#222;cursor:pointer}input{width:400px}output,#status{margin-left:12px}h1{font-size:20px}</style>
+<h1>여운의 문 — 경계 / 접힌 빛 / 남겨진 여운</h1><div id="formats"></div><canvas width="1280" height="720"></canvas>
+<button id="start">영상 제작 시작</button><button id="preview">미리보기 재생</button><label>장면 <input id="seek" type="range" min="0" max="48" step=".1" value="0"></label><output id="scene"></output><div id="status">준비됨</div><div id="audio">음악 측정 대기</div>
+<script type="importmap">{"imports":{"three":"/vendor/build/three.module.js","three/addons/":"/vendor/examples/jsm/"}}</script>
 <script type="module">
-import {drawFilm,DURATION} from './film.js';
-const canvas=document.querySelector('canvas'),status=document.querySelector('#status');drawFilm(canvas,18);
-const candidates=['video/mp4;codecs=avc1.42001E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus'];
-const supported=candidates.filter(type=>MediaRecorder.isTypeSupported(type));document.querySelector('#formats').textContent='Supported: '+supported.join(' / ');
+import {createFilm,DURATION} from './film.js';import {createScore} from './score.js';
+const canvas=document.querySelector('canvas'),status=document.querySelector('#status'),scene=document.querySelector('#scene'),seek=document.querySelector('#seek'),film=createFilm(canvas);
+const candidates=['video/mp4;codecs=avc1.42001E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus'];const supported=candidates.filter(type=>MediaRecorder.isTypeSupported(type));document.querySelector('#formats').textContent='Supported: '+supported.join(' / ');
+let previewFrame;const draw=t=>{scene.textContent=film.draw(t);seek.value=t;};seek.oninput=()=>{cancelAnimationFrame(previewFrame);draw(Number(seek.value));};document.querySelector('#preview').onclick=()=>{cancelAnimationFrame(previewFrame);const start=performance.now();const tick=()=>{draw((performance.now()-start)/1000%48);previewFrame=requestAnimationFrame(tick);};tick();};
 document.querySelector('#start').onclick=async()=>{
- document.querySelector('#start').disabled=true;
- const mimeType=supported[0],context=new AudioContext(),audio=context.createMediaStreamDestination(),gain=context.createGain();gain.gain.value=.3;gain.connect(audio);
- const chords=[[48,55,60,64,67],[53,60,64,67,69],[55,62,67,69,74],[48,55,60,64,72]];
- const note=(midi,at,peak=.12,duration=4)=>{
-  const osc=context.createOscillator(),envelope=context.createGain(),pan=context.createStereoPanner();osc.type='sine';osc.frequency.value=440*2**((midi-69)/12);pan.pan.value=Math.sin(midi)*.3;
-  envelope.gain.setValueAtTime(0,at);envelope.gain.linearRampToValueAtTime(peak,at+.15);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  osc.connect(envelope);envelope.connect(pan);pan.connect(gain);osc.start(at);osc.stop(at+duration+.01);
- };
- await context.resume();const origin=context.currentTime+.08;
- chords.forEach((chord,i)=>{chord.forEach((midi,j)=>note(midi,origin+i*12+j*.16,j?.032:.055,7));for(let n=0;n<6;n++)note(chord[1+n%4]+12,origin+i*12+n*1.8+1.2,.06,4);});
+ cancelAnimationFrame(previewFrame);document.querySelector('#start').disabled=true;document.querySelector('#preview').disabled=true;seek.disabled=true;
+ const mimeType=supported[0],context=new AudioContext(),audio=context.createMediaStreamDestination(),score=createScore(context,audio);await context.resume();score.schedule(context.currentTime+.08);score.fade(context.currentTime+46);
  const stream=canvas.captureStream(24);audio.stream.getAudioTracks().forEach(track=>stream.addTrack(track));
- const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:1800000,audioBitsPerSecond:96000}),chunks=[];
+ const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:3200000,audioBitsPerSecond:160000}),chunks=[],levels=new Float32Array(score.analyser.fftSize);let peak=0,rmsSum=0,samples=0,frame;
  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
- recorder.onstop=async()=>{
-  clearInterval(timer);stream.getTracks().forEach(track=>track.stop());await context.close();
-  const blob=new Blob(chunks,{type:mimeType}),extension=mimeType.includes('mp4')?'mp4':'webm';
-  status.textContent='파일 저장 중';await fetch('/save-film?ext='+extension,{method:'POST',body:blob});
-  drawFilm(canvas,18);const poster=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.94));await fetch('/save-poster',{method:'POST',body:poster});
-  status.textContent='완료: afterglow.'+extension+' / '+blob.size+' bytes';
- };
- const start=performance.now();recorder.start(1000);
- const timer=setInterval(()=>{const elapsed=(performance.now()-start)/1000;drawFilm(canvas,elapsed);status.textContent='제작 중 '+elapsed.toFixed(1)+' / 48초';if(elapsed>=DURATION)recorder.stop();},1000/24);
+ recorder.onstop=async()=>{cancelAnimationFrame(frame);stream.getTracks().forEach(track=>track.stop());await context.close();const blob=new Blob(chunks,{type:mimeType}),extension=mimeType.includes('mp4')?'mp4':'webm';status.textContent='파일 저장 중';const response=await fetch('/save-film?ext='+extension,{method:'POST',body:blob});if(!response.ok)throw new Error(await response.text());draw(24);const poster=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.94));await fetch('/save-poster',{method:'POST',body:poster});status.textContent='완료: afterglow.'+extension+' / '+blob.size+' bytes';document.querySelector('#audio').textContent=`출력 음악: peak ${peak.toFixed(3)} / 평균 RMS ${(rmsSum/samples).toFixed(3)}`;seek.disabled=false;document.querySelector('#preview').disabled=false;};
+ const start=performance.now();draw(0);recorder.start(1000);const tick=()=>{const elapsed=(performance.now()-start)/1000;draw(Math.min(48,elapsed));score.analyser.getFloatTimeDomainData(levels);let energy=0;for(const value of levels){peak=Math.max(peak,Math.abs(value));energy+=value*value;}rmsSum+=Math.sqrt(energy/levels.length);samples++;status.textContent='제작 중 '+elapsed.toFixed(1)+' / 48초';document.querySelector('#audio').textContent=`출력 음악 peak ${peak.toFixed(3)}`;if(elapsed>=DURATION)recorder.stop();else frame=requestAnimationFrame(tick);};tick();
 };
-</script>
+</script></html>

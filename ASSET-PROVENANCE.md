@@ -15,7 +15,7 @@ This project contains a fictional exhibition. Its artist names and artwork descr
 | Music and effects | Project-authored Web Audio synthesis; no downloaded recording |
 | Gallery furniture, oak louvers, olive plants and wall typography | Procedural Three.js geometry and canvas lettering authored for this project in src/gallery-details.js. No external model or additional image assets. |
 | Second-floor screening hall concept | Generated with OpenAI ImageGen for this project; design/cinema-concept.png is a direction reference, not a runtime screenshot. |
-| “Afterglow / 여운의 문” film and poster | Original Canvas 2D motion artwork with project-authored Web Audio music, recorded in-browser with MediaRecorder as H.264/AAC MP4. The poster is a frame from the same artwork. No external video, stock music, paid generation service, or imported model. Authoring source: design/film-production. |
+| “Afterglow / 여운의 문” film and poster | Original three-act Three.js motion artwork (luminous portals, folded metallic ribbons, expanding light fragments) with project-authored Web Audio felt-piano music, recorded in-browser with MediaRecorder as H.264/AAC MP4. The poster is a frame from the same artwork. No external video, stock music, paid generation service, or imported model. Authoring source: design/film-production. |
 | Second-floor hall, seats and stairs | Project-authored Three.js geometry; repeated chair parts use instanced meshes. |
 | Actual process screenshots | Browser captures of the running project, not concept renderings |
 | Fonts / libraries | Pretendard SIL OFL; Helvetiker original license in public/fonts; Three.js MIT; React MIT; Vite MIT |

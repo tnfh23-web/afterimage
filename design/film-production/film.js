@@ -1,38 +1,68 @@
+import * as T from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {Reflector} from 'three/addons/objects/Reflector.js';
+import {ParametricGeometry} from 'three/addons/geometries/ParametricGeometry.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
 export const DURATION=48;
-export function drawFilm(canvas,time){
- const c=canvas.getContext('2d'),W=canvas.width,H=canvas.height,t=time%48,phase=t/48*Math.PI*2;
- c.fillStyle='#0b0d10';c.fillRect(0,0,W,H);
- const horizon=H*.49,camX=Math.sin(phase)*1.1,camZ=1.4-Math.cos(phase)*1.4,f=W*.76;
- const project=(x,y,z)=>{const d=z-camZ;return [W*.5+(x-camX)*f/d,horizon+(1.5-y)*f/d,d];};
- const mist=c.createRadialGradient(W*.58,H*.34,0,W*.5,H*.45,W*.64);mist.addColorStop(0,'#403d383d');mist.addColorStop(.6,'#29282d12');mist.addColorStop(1,'#080a0d00');c.fillStyle=mist;c.fillRect(0,0,W,H);
- const floor=c.createLinearGradient(0,horizon,0,H);floor.addColorStop(0,'#27242500');floor.addColorStop(.11,'#272425');floor.addColorStop(1,'#090c10');c.fillStyle=floor;c.fillRect(0,horizon-30,W,H-horizon+30);
- // Slow, fine contours across the dark reflective ground.
- c.save();c.globalCompositeOperation='screen';
- for(let i=0;i<85;i++){
-  const depth=3.8+i*.3;c.beginPath();
-  for(let j=0;j<=85;j++){
-   const x=-12+j*.3,z=depth+.14*Math.sin(x*.8+phase+i*.16),p=project(x,0,z);
-   const wave=Math.sin(x*.85+phase*2+i*.17);const y=p[1]+wave*(1+i*.045);
-   j?c.lineTo(p[0],y):c.moveTo(p[0],y);
-  }
-  c.strokeStyle=`rgba(202,155,96,${.03+.055*Math.pow(Math.sin(i*.21+phase),6)})`;c.lineWidth=.65;c.stroke();
+const ease=(a,b,x)=>T.MathUtils.smoothstep(x,a,b);
+export function createFilm(canvas){
+ const renderer=new T.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setSize(1280,720,false);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.outputColorSpace=T.SRGBColorSpace;
+ const scene=new T.Scene();scene.background=new T.Color(0x080e14);scene.fog=new T.FogExp2(0x080e14,.028);
+ const pmrem=new T.PMREMGenerator(renderer),environment=pmrem.fromScene(new RoomEnvironment(),.04);scene.environment=environment.texture;scene.environmentIntensity=.65;
+ const camera=new T.PerspectiveCamera(45,16/9,.1,120);
+ scene.add(new T.HemisphereLight(0xb5d3e6,0x191014,.8));
+ for(const [x,y,z,color,power] of [[-5,6,5,0xffdb9d,18],[5,4,-4,0x8ac5ef,24],[0,8,0,0xffeccf,16]]){const light=new T.PointLight(color,power,24,2);light.position.set(x,y,z);scene.add(light);}
+ const floor=new Reflector(new T.PlaneGeometry(80,80),{textureWidth:768,textureHeight:432,color:0x6f7c87,multisample:0,clipBias:.003});floor.rotation.x=-Math.PI/2;floor.position.y=-.015;scene.add(floor);
+ const glassFloor=new T.Mesh(new T.PlaneGeometry(80,80),new T.MeshStandardMaterial({color:0x0e1921,roughness:.3,metalness:.8,transparent:true,opacity:.42,depthWrite:false}));glassFloor.rotation.x=-Math.PI/2;scene.add(glassFloor);
+ const gold=new T.MeshStandardMaterial({color:0xdab578,metalness:.92,roughness:.32,transparent:true});
+ const portalMat=new T.MeshStandardMaterial({color:0xd5b98a,emissive:0xffc076,emissiveIntensity:1.2,metalness:.7,roughness:.24,transparent:true});
+ const portals=new T.Group();scene.add(portals);
+ for(let i=0;i<9;i++){
+  const frame=new T.Group();frame.position.set(Math.sin(i*.48)*1.1,0,-i*4);frame.rotation.y=Math.sin(i*.4)*.18;portals.add(frame);
+  for(const [w,h,d,x,y] of [[.065,5.2,.08,-2.3,2.6],[.065,5.2,.08,2.3,2.6],[4.66,.065,.08,0,5.2]]){const m=new T.Mesh(new T.BoxGeometry(w,h,d),portalMat);m.position.set(x,y,0);frame.add(m);}
  }
- const portals=[[-4,16,1.6,3.8,.17],[-1.7,12,1.5,3.2,-.14],[1.8,10.7,1.65,4.05,.12],[4.8,19,1.65,3.1,-.18],[.4,24,1.7,3.7,-.12]];
- for(const [x,z,w,h,angle] of portals){
-  const points=[[-w/2,0],[ -w/2,h],[w/2,h],[w/2,0]].map(([dx,y])=>project(x+dx*Math.cos(angle),y,z+dx*Math.sin(angle)));
-  const trace=(mirror=false)=>{c.beginPath();points.forEach((p,i)=>{const py=mirror?2*project(0,0,z)[1]-p[1]:p[1];i?c.lineTo(p[0],py):c.moveTo(p[0],py);});};
-  c.save();const brightness=.86+.12*Math.sin(phase+z*.25);
-  for(const [width,alpha,blur] of [[9,.12,25],[3,.38,9],[1.2,.96,3]]){
-   trace();c.lineWidth=width;c.strokeStyle=`rgba(255,210,145,${alpha*brightness})`;c.shadowColor='#ffc47b';c.shadowBlur=blur;c.stroke();
-  }
-  c.save();c.beginPath();c.rect(0,project(0,0,z)[1],W,H);c.clip();trace(true);c.lineWidth=3;c.strokeStyle='#ffd19a35';c.shadowBlur=12;c.stroke();c.restore();
-  const [gx,gy]=project(x,0,z),glow=c.createRadialGradient(gx,gy,0,gx,gy,W*.13);glow.addColorStop(0,'#fbd6a828');glow.addColorStop(1,'#e4ad6000');c.fillStyle=glow;c.fillRect(gx-W*.13,gy-W*.13,W*.26,W*.26);
-  c.restore();
+ const sculpture=new T.Group();sculpture.position.y=2.95;scene.add(sculpture);
+ const ribbons=[];
+ for(let j=0;j<6;j++){
+  const geometry=new ParametricGeometry((u,v,target)=>{
+   const a=u*Math.PI*2,twist=a*1.5+j*Math.PI/3,w=(v-.5)*.72,r=1.72+.42*Math.sin(3*a)+w*Math.cos(twist);
+   target.set(r*Math.cos(a),.68*Math.sin(3*a)+w*Math.sin(twist),r*Math.sin(a));
+  },128,18);
+  const mat=gold.clone();mat.side=T.DoubleSide;mat.color.setHSL(.095+j*.012,.5,.32+j*.012);
+  const ribbon=new T.Mesh(geometry,mat);ribbon.rotation.set(j*.42,j*.8,j*.32);sculpture.add(ribbon);ribbons.push(ribbon);
  }
- for(let i=0;i<500;i++){
-  const seed=Math.sin(i*178.39)*43758.5453,rand=seed-Math.floor(seed),x=(i*127.3%W)+Math.sin(phase+i)*7,y=(i*91.7%H)+Math.cos(phase+i*.6)*5;
-  c.fillStyle=`rgba(242,214,167,${(.06+rand*.48)*(.65+.35*Math.sin(phase+i))})`;c.beginPath();c.arc(x,y,.35+rand*.55,0,Math.PI*2);c.fill();
+ // A fine orbit of fragments turns into an expanding constellation in act III.
+ const fragmentMat=new T.MeshStandardMaterial({color:0xe8cd9c,metalness:.7,roughness:.3,emissive:0x7b5028,emissiveIntensity:.6,transparent:true});
+ const fragments=new T.InstancedMesh(new T.OctahedronGeometry(.025,0),fragmentMat,900),dummy=new T.Object3D();scene.add(fragments);
+ const dustGeometry=new T.BufferGeometry(),dustPositions=new Float32Array(1200*3);
+ for(let i=0;i<1200;i++){dustPositions[i*3]=(Math.sin(i*34.41)*.5+.5)*34-17;dustPositions[i*3+1]=(Math.sin(i*13.81)*.5+.5)*11;dustPositions[i*3+2]=(Math.cos(i*64.71)*.5+.5)*50-35;}
+ dustGeometry.setAttribute('position',new T.BufferAttribute(dustPositions,3));const dust=new T.Points(dustGeometry,new T.PointsMaterial({color:0xdbcab4,size:.018,transparent:true,opacity:.45,depthWrite:false}));scene.add(dust);
+ // Thin floor rings make distance and movement readable, and catch reflections.
+ const ringMat=new T.MeshBasicMaterial({color:0x95724b,transparent:true,opacity:.16,side:T.DoubleSide});
+ for(let i=0;i<24;i++){const ring=new T.Mesh(new T.RingGeometry(3+i*.65,3.008+i*.65,128),ringMat);ring.rotation.x=-Math.PI/2;ring.position.y=.012;scene.add(ring);}
+ const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new T.Vector2(1280,720),.18,.6,1.5));composer.addPass(new OutputPass());
+ function draw(time){
+  const t=Math.max(0,Math.min(48,time)),reveal=ease(10,18,t),dissolve=ease(32,42,t),returning=ease(43,48,t);
+  const presence=reveal*(1-dissolve);
+  portals.visible=reveal<.98||returning>.01;portalMat.opacity=(1-reveal)*(1-returning)+returning;portalMat.emissiveIntensity=1+.18*Math.sin(t*.4);
+  sculpture.scale.setScalar(.5+reveal*.5);sculpture.rotation.set(.14*Math.sin(t*.18),t*.105,.11*Math.sin(t*.23));
+  ribbons.forEach((r,i)=>{r.material.opacity=presence;r.rotation.x=i*.42+Math.sin(t*.28+i)*.21; r.position.y=Math.sin(t*.35+i)*.13+(.5-reveal)*i*.45;});sculpture.visible=presence>.002;
+  fragmentMat.opacity=reveal*(.2+dissolve*.8)*(1-returning);
+  for(let i=0;i<900;i++){
+   const a=i*2.399963+t*.035,r=1.8+(i%29)/29*.85+dissolve*(2+(i%53)/53*6),v=1-i/450;
+   dummy.position.set(Math.cos(a)*Math.sqrt(1-v*v)*r,2.95+v*r+Math.sin(t*.3+i)*.1,Math.sin(a)*Math.sqrt(1-v*v)*r);
+   dummy.rotation.set(a+t*.2,a*.6,t*.1);dummy.scale.setScalar(.5+(i%7)*.16+dissolve*.45);dummy.updateMatrix();fragments.setMatrixAt(i,dummy.matrix);
+  }fragments.instanceMatrix.needsUpdate=true;fragments.visible=fragmentMat.opacity>.002;
+  dust.rotation.y=t*.004;
+  const orbit=ease(17,40,t),angle=.25+orbit*1.8,radius=8.4-dissolve*.4;
+  const start=new T.Vector3(Math.sin(t*.11)*.5,2.65,16-ease(0,16,t)*7.6),around=new T.Vector3(Math.sin(angle)*radius,3.1+Math.sin(t*.1)*.45,Math.cos(angle)*radius);
+  camera.position.copy(start.lerp(around,reveal)).lerp(new T.Vector3(0,2.65,16),returning);camera.lookAt(0,2.6+reveal*.2,0);
+  composer.render();
+  return t<12?'01 — 경계를 지나':t<33?'02 — 접힌 빛':t<43?'03 — 남겨진 여운':'다시, 문 앞에서';
  }
- c.restore();
- const vignette=c.createRadialGradient(W*.5,H*.46,W*.12,W*.5,H*.5,W*.64);vignette.addColorStop(0,'#0000');vignette.addColorStop(1,'#000b');c.fillStyle=vignette;c.fillRect(0,0,W,H);
+ draw(0);return {draw};
 }

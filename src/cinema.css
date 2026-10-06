@@ -19,3 +19,10 @@
 .app[data-zone=cinema] footer>.sound-toggle{margin-left:auto}
 
 @media(min-width:701px) and (max-width:1000px){.cinema-player{left:3%;right:3%;bottom:90px;background:#12100ee6;border-top:1px solid #cfa57944;padding:12px}.film-title span{display:block;max-width:none}.app[data-zone=cinema] .touch-controls{bottom:190px}}
+
+.seat-action{position:absolute;z-index:7;right:4.5%;bottom:112px;display:flex;align-items:center;gap:14px;padding:10px 14px;color:#302c25;background:#eeeae2eb;border:1px solid #302c2540;font-size:12px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.seat-action button{padding:8px 4px;font-weight:600}.seat-action kbd{margin-left:10px;font:10px inherit;border:1px solid currentColor;padding:2px 5px;border-radius:3px}.app[data-zone=cinema] .seat-action{color:#eeeae2;background:#161513ed;border-color:#bfa37f70}
+@media(max-width:700px),(pointer:coarse){.seat-action{right:22px;bottom:320px;padding:8px 12px;gap:10px;font-size:11px}.seat-action kbd{display:none}.app[data-zone=cinema] .seat-action{bottom:390px}}
+@media(max-height:550px){.seat-action{bottom:185px}.app[data-zone=cinema] .seat-action{bottom:265px}}
+
+.app .seat-action button:hover{color:inherit;text-decoration:underline}.seat-action kbd{color:inherit}.seat-action button:focus-visible{outline:1px solid currentColor;outline-offset:3px}

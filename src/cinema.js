@@ -3,6 +3,7 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {assetUrl} from './asset-url';
 import {batchRoomArchitecture} from './static-room-batches';
 import {CINEMA_ID,cinema,cinemaGround} from './cinema-layout';
+import {theatreSeats} from './seating';
 
 export function cinemaStairs(root,mats,cube,obstacles,floorRects,label){
  const stone=mats.ceramic,rail=mats.edge,glow=mats.light;
@@ -40,7 +41,7 @@ export function cinemaStairs(root,mats,cube,obstacles,floorRects,label){
  };
 }
 
-export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles){
+export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,seats){
  const root=new T.Group();root.position.set(cinema.x,cinema.y,cinema.z);scene.add(root);
  const dark=new T.MeshStandardMaterial({color:0x141313,roughness:.93}),wood=new T.MeshStandardMaterial({color:0x513823,roughness:.9}),seat=new T.MeshStandardMaterial({color:0x37332e,roughness:.94}),warm=new T.MeshBasicMaterial({color:0xc08c50,toneMapped:false});
  cube(root,16,.2,26,0,-.1,0,dark);cube(root,16,.22,26,0,9.2,0,dark);
@@ -61,6 +62,7 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles){
   mesh.receiveShadow=true;root.add(mesh);
  };
  part(1.18,.22,1,.4,0);part(1.21,1.04,.24,.86,.5);part(1.12,.34,.86,.18,0);part(.16,.38,.94,.57,0,true);
+ theatreSeats(seats,cinema,placements);
  placements.forEach(p=>obstacles.push({x:cinema.x+p.x,z:cinema.z+p.z,w:1.38,d:1.3,y:cinema.y+p.y}));
  for(const [x,z,w,d] of [[0,-13,16,.3],[0,13,16,.3],[8,0,.3,26],[-8,-8.85,.3,8.3],[-8,5.15,.3,15.7]])obstacles.push({x:cinema.x+x,z:cinema.z+z,w,d,y:cinema.y,maxY:cinema.y+9.2});
  floorRects.push({x:cinema.x,z:cinema.z,w:16,d:26,y:cinema.y,heightAt:cinemaGround});
