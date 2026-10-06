@@ -26,3 +26,5 @@
 @media(max-height:550px){.seat-action{bottom:185px}.app[data-zone=cinema] .seat-action{bottom:265px}}
 
 .app .seat-action button:hover{color:inherit;text-decoration:underline}.seat-action kbd{color:inherit}.seat-action button:focus-visible{outline:1px solid currentColor;outline-offset:3px}
+
+@media(min-width:701px) and (max-width:1000px){.app[data-zone=cinema] .seat-action{bottom:190px}}

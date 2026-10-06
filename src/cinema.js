@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {createFilmAudio} from './film-audio';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {assetUrl} from './asset-url';
 import {batchRoomArchitecture} from './static-room-batches';
@@ -78,7 +79,8 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  batchRoomArchitecture(root);
  const video=document.createElement('video');video.preload='none';video.playsInline=true;video.loop=true;video.muted=true;video.setAttribute('playsinline','');video.poster=assetUrl('/media/afterglow-poster.jpg?v=film-v2');
  video.id='cinema-film-media';video.hidden=true;video.setAttribute('aria-hidden','true');document.body.appendChild(video);
- let texture,loaded=false,inside=false,visible=true,wantsPlay=true,soundEnabled=true,volume=.35,error='';
+ const audio=createFilmAudio(video);
+ let texture,loaded=false,inside=false,visible=true,wantsPlay=true,soundEnabled=true,error='';
  const revealVideo=()=>{if(!texture){texture=new T.VideoTexture(video);texture.colorSpace=T.SRGBColorSpace;screenMaterial.map=texture;screenMaterial.needsUpdate=true;}};video.addEventListener('loadeddata',revealVideo);
  const play=()=>{if(!inside||!visible||!wantsPlay||document.hidden)return;video.play().then(()=>{error='';}).catch(()=>{video.muted=true;video.play().catch(()=>{error='재생 버튼을 눌러 영상을 시작해 주세요.';});});};
  const refresh=()=>{if(inside&&visible&&wantsPlay&&!document.hidden)play();else video.pause();};
@@ -86,14 +88,15 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  const gesture=()=>{if(inside&&soundEnabled){video.muted=false;play();}};window.addEventListener('pointerdown',gesture,{passive:true});
  const film={
   video,
-  enter(value){inside=value;if(value&&!loaded){loaded=true;video.src=assetUrl('/media/afterglow.mp4?v=film-v2');}if(value){video.muted=!soundEnabled;video.volume=volume;}refresh();},
+  connectAudio:context=>audio.connect(context),
+  enter(value){inside=value;if(value&&!loaded){loaded=true;video.src=assetUrl('/media/afterglow.mp4?v=film-v2');}if(value)video.muted=!soundEnabled;refresh();},
   visible(value){visible=value;refresh();},
-  sound(enabled,nextVolume){soundEnabled=enabled;volume=nextVolume;video.muted=!enabled;video.volume=volume;},
+  sound(enabled,nextVolume){soundEnabled=enabled;audio.set(enabled,nextVolume);},
   toggle(){if(video.error){error='';video.load();wantsPlay=true;}else wantsPlay=!wantsPlay;refresh();},
   restart(){video.currentTime=0;wantsPlay=true;refresh();},
   seek(time){video.currentTime=Math.max(0,Math.min(video.duration||48,time));},
   state(){return {time:video.currentTime,duration:Number.isFinite(video.duration)?video.duration:48,playing:inside&&!video.paused,loaded:video.readyState>=2,error:error|| (video.error?'영상을 불러오지 못했어요. 다시 재생해 주세요.':'')};},
-  dispose(){window.removeEventListener('pointerdown',gesture);document.removeEventListener('visibilitychange',visibility);video.removeEventListener('loadeddata',revealVideo);video.pause();video.removeAttribute('src');video.load();video.remove();texture?.dispose();poster.dispose();},
+  dispose(){window.removeEventListener('pointerdown',gesture);document.removeEventListener('visibilitychange',visibility);video.removeEventListener('loadeddata',revealVideo);video.pause();audio.dispose();video.removeAttribute('src');video.load();video.remove();texture?.dispose();poster.dispose();},
  };
  return {root,film};
 }

@@ -3,7 +3,7 @@ import {CINEMA_ID} from './cinema-layout';
 // allocated only on the visitor's first gesture; no external music recording.
 export function createSound(onState){
  let context,master,filter,verb,noise,active=true,volume=.35,room=0;
- let scheduler,fadeTimer,nextBeat=0,beat=0,disposed=false,request=0,stepCount=0;
+ let scheduler,fadeTimer,nextBeat=0,beat=0,disposed=false,request=0,stepCount=0,film=null;
  const voices=new Set(),frequency=midi=>440*Math.pow(2,(midi-69)/12);
  // Cmaj9 / Fmaj9 / G6add9 / C6add9: open major voicings, no ominous drone.
  const chords=[[48,55,59,62,64],[53,60,64,67,69],[55,62,64,67,69],[48,55,60,62,69]];
@@ -22,13 +22,14 @@ export function createSound(onState){
  function init(){
   const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw new Error('이 브라우저에서는 소리를 사용할 수 없어요.');
   context=new Audio();master=context.createGain();master.gain.value=0;master.connect(context.destination);
-  filter=context.createBiquadFilter();filter.type='lowpass';filter.frequency.value=2800;filter.Q.value=.3;filter.connect(master);
+  filter=context.createBiquadFilter();filter.type='lowpass';filter.frequency.value=2800;filter.Q.value=.3;const music=context.createGain();music.gain.value=.65;filter.connect(music);music.connect(master);
   let seed=7331;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296*2-1;};
   verb=context.createConvolver();const tail=context.createBuffer(2,Math.floor(context.sampleRate*1.65),context.sampleRate);
   for(let c=0;c<2;c++){const samples=tail.getChannelData(c);for(let i=0;i<samples.length;i++)samples[i]=random()*Math.pow(1-i/samples.length,3.5);}
-  verb.buffer=tail;const wet=context.createGain();wet.gain.value=.14;filter.connect(verb);verb.connect(wet);wet.connect(master);
+  verb.buffer=tail;const wet=context.createGain();wet.gain.value=.14;filter.connect(verb);verb.connect(wet);wet.connect(music);
   noise=context.createBuffer(1,Math.floor(context.sampleRate*.18),context.sampleRate);const samples=noise.getChannelData(0);
   for(let i=0;i<samples.length;i++)samples[i]=random()*Math.pow(1-i/samples.length,2.6);
+  film?.connectAudio(context);
  }
  function schedule(){
   if(!active||context.state!=='running')return;
@@ -60,6 +61,7 @@ export function createSound(onState){
  document.addEventListener('visibilitychange',visibility);
  return {
   setEnabled,
+  attachFilm(value){film=value;if(context)film?.connectAudio(context);},
   activate(){if(active&&!disposed&&!document.hidden&&context?.state!=='running')return setEnabled(true);},
   setVolume(value){volume=Math.max(0,Math.min(1,value));if(context&&active)master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.08);},
   setRoom(value){room=value;if(context&&active)master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.65);},

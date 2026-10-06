@@ -13,5 +13,6 @@ export function useSound(room){
  return {state,volume,error,enabled:state==='waiting'||state==='playing'||state==='paused',
   toggle:()=>controller.current?.setEnabled(state!=='waiting'&&state!=='playing'&&state!=='paused'),
   changeVolume:value=>{setVolume(value);controller.current?.setVolume(value);},
+  attachFilm:film=>controller.current?.attachFilm(film),
   cue:()=>controller.current?.cue(),step:()=>controller.current?.step()};
 }
