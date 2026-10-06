@@ -1,11 +1,12 @@
 // Use the shared, gesture-unlocked context so mobile video volume is adjustable.
-// Half the recent soundtrack level, with a short ramp to avoid abrupt changes.
+// Match the gallery music at the same shared slider setting.
+import {DEFAULT_VOLUME,FILM_MUSIC_GAIN} from './audio-levels';
 export function createFilmAudio(video){
- let source,gain,context,enabled=true,volume=.35;
+ let source,gain,context,enabled=true,volume=DEFAULT_VOLUME;
  const update=()=>{
   video.muted=!enabled;
-  if(gain){gain.gain.cancelScheduledValues(context.currentTime);gain.gain.setTargetAtTime(enabled?volume*.5:0,context.currentTime,.06);}
-  else video.volume=volume*.5;
+  if(gain){gain.gain.cancelScheduledValues(context.currentTime);gain.gain.setTargetAtTime(enabled?volume*FILM_MUSIC_GAIN:0,context.currentTime,.06);}
+  else video.volume=volume*FILM_MUSIC_GAIN;
  };
  update();
  return {
@@ -13,7 +14,7 @@ export function createFilmAudio(video){
    if(source)return;
    context=nextContext;
    source=context.createMediaElementSource(video);gain=context.createGain();
-   gain.gain.value=enabled?volume*.5:0;
+   gain.gain.value=enabled?volume*FILM_MUSIC_GAIN:0;
    source.connect(gain);gain.connect(context.destination);video.volume=1;
    update();
   },

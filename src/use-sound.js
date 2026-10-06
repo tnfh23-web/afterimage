@@ -1,7 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {createSound} from './sound';
+import {DEFAULT_VOLUME} from './audio-levels';
 export function useSound(room){
- const controller=useRef(null),[state,setState]=useState('waiting'),[volume,setVolume]=useState(.35),[error,setError]=useState('');
+ const controller=useRef(null),[state,setState]=useState('waiting'),[volume,setVolume]=useState(DEFAULT_VOLUME),[error,setError]=useState('');
  useEffect(()=>{
   const engine=createSound((next,message='')=>{setState(next);setError(message);});controller.current=engine;
   const activate=()=>engine.activate();

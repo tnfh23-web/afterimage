@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {benchSeats} from './seating';
+import {curateRoomWalls} from './gallery-wall-curation';
 
 // All details are static. Shared materials, merged timber and instanced leaves
 // add spatial texture without extra lights, animation or downloaded assets.
@@ -89,9 +90,5 @@ export function roomDetails(root,room,mats,cube,obstacles,seats){
  timberBench(root,-4,2,3.5,0,mats,cube);
  benchSeats(seats,room,-4,2,3.5,0,[room.x+1,2,room.z-.6]);
  obstacles.push({x:room.x-4,z:room.z+2,w:3.5,d:.7});
- // Install the room title on a side wall, clear of the painting, sculpture and
- // north/south connections. Wall-mounted elements have no walking footprint.
- const x=room.w/2-.34,z=4.7,rotation=-Math.PI/2;
- typography(root,[{text:`ROOM ${room.number}`,size:72,y:155,color:'#7b705e'},{text:room.title,size:154,weight:500,y:425},{text:room.en,size:66,y:580},{text:`${room.artist}   /   조각 · 회화`,size:65,y:815},{text:'AFTERIMAGE   2026',size:43,y:1040,color:'#7b705e'}],3.6,2.6,x,2.3,z,rotation);
- for(const offset of [-2,2])cube(root,.035,2.65,.055,x-.035,2.3,z+offset,mats.oak);
+ curateRoomWalls(root,room,mats,cube);
 }

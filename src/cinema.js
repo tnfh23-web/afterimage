@@ -8,38 +8,45 @@ import {theatreSeats} from './seating';
 
 export function cinemaStairs(root,mats,cube,obstacles,floorRects,label){
  const stone=mats.ceramic,rail=mats.edge,glow=mats.light;
+ const length=Math.hypot(7.4,4.1),angle=Math.atan2(4.1,7.4);
  const flights=[{x:4.3,sign:-1,base:0},{x:6.25,sign:1,base:4.1}];
  for(const flight of flights){
+  // A continuous inclined slab supports actual treads. The upper flight no
+  // longer consists of twenty solid blocks extending down through the lobby.
+  const slab=cube(root,1.65,.22,length,flight.x,flight.base+1.84,-6.3,stone);
+  slab.rotation.x=-flight.sign*angle;
   for(let i=0;i<20;i++){
-   const z=flight.sign<0?-2.6-(i+.5)*.37:-10+(i+.5)*.37,height=flight.base+(i+1)*.205;
-   cube(root,1.65,height,.37,flight.x,height/2,z,stone);
-   cube(root,1.62,.014,.025,flight.x,height+.008,z-flight.sign*.17,glow);
+   const z=flight.sign<0?-2.6-(i+.5)*.37:-10+(i+.5)*.37,top=flight.base+(i+1)*.205;
+   cube(root,1.65,.205,.37,flight.x,top-.1025,z,stone);
+   const strip=cube(root,1.48,.01,.018,flight.x,top+.006,z-flight.sign*.17,glow);strip.castShadow=false;
   }
   for(const x of [flight.x-.82,flight.x+.82]){
-   const mesh=cube(root,.045,Math.hypot(7.4,4.1),.045,x,flight.base+3.08,-6.3,rail);mesh.rotation.x=flight.sign*Math.atan2(7.4,4.1);
-   for(let i=0;i<8;i++){const z=flight.sign<0?-2.6-i*.99:-10+i*.99,y=flight.base+i/7*4.1;cube(root,.027,1.04,.027,x,y+.52,z,rail);}
-   obstacles.push({x,z:-6.3,w:.08,d:7.4,minY:0,maxY:10});
+   const handrail=cube(root,.045,.045,length,x,flight.base+3.1,-6.3,rail);handrail.rotation.x=-flight.sign*angle;
+   for(let i=0;i<9;i++){
+    const t=i/8,z=flight.sign<0?-2.6-t*7.4:-10+t*7.4,top=flight.base+t*4.1;
+    cube(root,.027,1.05,.027,x,top+.525,z,rail);
+   }
+   obstacles.push({x,z:-6.3,w:.08,d:7.4,minY:flight.base,maxY:flight.base+5.25});
   }
  }
- cube(root,3.6,.2,1.5,5.28,4,-10.75,stone);
- cube(root,7.05,.2,1.8,8.925,8.1,-1.7,stone);
+ cube(root,3.6,.22,1.5,5.28,3.99,-10.75,stone);
+ cube(root,7.05,.22,1.8,8.925,8.09,-1.7,stone);
+ // Landing guards stop at the stair mouth and door reveal; no rail crosses
+ // the walking aperture or hangs across the screening-room threshold.
  for(const z of [-2.6,-.8]){
-  cube(root,4.5,.045,.045,9.7,9.2,z,rail);
-  for(let i=0;i<7;i++)cube(root,.035,1,.035,7.55+i*.7,8.7,z,rail);
-  obstacles.push({x:9.7,z,w:4.5,d:.09,minY:8.2,maxY:10});
+  cube(root,4.4,.045,.045,9.7,9.25,z,rail);
+  for(let i=0;i<7;i++)cube(root,.035,1.05,.035,7.55+i*.7,8.725,z,rail);
+  obstacles.push({x:9.7,z,w:4.4,d:.09,minY:8.2,maxY:10});
  }
- const sign=label('2F  상영관',1.6,.55);sign.position.set(4.3,1.5,-2.55);root.add(sign);
  floorRects.push({x:8.925,z:-1.7,w:7.05,d:1.8,y:8.2});
  floorRects.push({x:5.28,z:-10.75,w:3.6,d:1.5,y:4.1});
- return {
-  heightAt(x,z){
-   if(z>=-10&&z<=-2.6){
-    if(Math.abs(x-4.3)<.825)return (-z-2.6)/7.4*4.1;
-    if(Math.abs(x-6.25)<.825)return 4.1+(z+10)/7.4*4.1;
-   }
-   return null;
-  },
- };
+ return {heightAt(x,z){
+  if(z>=-10&&z<=-2.6){
+   if(Math.abs(x-4.3)<.825)return (-z-2.6)/7.4*4.1;
+   if(Math.abs(x-6.25)<.825)return 4.1+(z+10)/7.4*4.1;
+  }
+  return null;
+ }};
 }
 
 export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,seats){
