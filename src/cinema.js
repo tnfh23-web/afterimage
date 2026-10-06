@@ -67,7 +67,7 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  for(const [x,z,w,d] of [[0,-13,16,.3],[0,13,16,.3],[8,0,.3,26],[-8,-8.85,.3,8.3],[-8,5.15,.3,15.7]])obstacles.push({x:cinema.x+x,z:cinema.z+z,w,d,y:cinema.y,maxY:cinema.y+9.2});
  floorRects.push({x:cinema.x,z:cinema.z,w:16,d:26,y:cinema.y,heightAt:cinemaGround});
  cube(root,14.15,8.1,.19,0,4.67,-12.7,mats.black);
- const poster=loader.load(assetUrl('/media/afterglow-poster.jpg'));poster.colorSpace=T.SRGBColorSpace;
+ const poster=loader.load(assetUrl('/media/afterglow-poster.jpg?v=film-v2'));poster.colorSpace=T.SRGBColorSpace;
  const screenMaterial=new T.MeshBasicMaterial({map:poster,toneMapped:false});
  const screen=new T.Mesh(new T.PlaneGeometry(13.4,7.5375),screenMaterial);screen.position.set(0,4.75,-12.56);root.add(screen);
  const exit=label('1F  채광 홀',1.4,.5,'#eeeae2');exit.position.set(-7.72,2.1,-3.7);exit.rotation.y=Math.PI/2;root.add(exit);
@@ -76,7 +76,7 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  const key=new T.SpotLight(0xffdca1,12,30,1,.9,2);key.position.set(0,8,8);key.target.position.set(0,0,0);root.add(key,key.target);
  const wash=new T.SpotLight(0xf6b86c,8,25,1,1,2);wash.position.set(0,8,-8);wash.target.position.set(0,0,-4);root.add(wash,wash.target);
  batchRoomArchitecture(root);
- const video=document.createElement('video');video.preload='none';video.playsInline=true;video.loop=true;video.muted=true;video.setAttribute('playsinline','');video.poster=assetUrl('/media/afterglow-poster.jpg');
+ const video=document.createElement('video');video.preload='none';video.playsInline=true;video.loop=true;video.muted=true;video.setAttribute('playsinline','');video.poster=assetUrl('/media/afterglow-poster.jpg?v=film-v2');
  video.id='cinema-film-media';video.hidden=true;video.setAttribute('aria-hidden','true');document.body.appendChild(video);
  let texture,loaded=false,inside=false,visible=true,wantsPlay=true,soundEnabled=true,volume=.35,error='';
  const revealVideo=()=>{if(!texture){texture=new T.VideoTexture(video);texture.colorSpace=T.SRGBColorSpace;screenMaterial.map=texture;screenMaterial.needsUpdate=true;}};video.addEventListener('loadeddata',revealVideo);
@@ -86,7 +86,7 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  const gesture=()=>{if(inside&&soundEnabled){video.muted=false;play();}};window.addEventListener('pointerdown',gesture,{passive:true});
  const film={
   video,
-  enter(value){inside=value;if(value&&!loaded){loaded=true;video.src=assetUrl('/media/afterglow.mp4');}if(value){video.muted=!soundEnabled;video.volume=volume;}refresh();},
+  enter(value){inside=value;if(value&&!loaded){loaded=true;video.src=assetUrl('/media/afterglow.mp4?v=film-v2');}if(value){video.muted=!soundEnabled;video.volume=volume;}refresh();},
   visible(value){visible=value;refresh();},
   sound(enabled,nextVolume){soundEnabled=enabled;volume=nextVolume;video.muted=!enabled;video.volume=volume;},
   toggle(){if(video.error){error='';video.load();wantsPlay=true;}else wantsPlay=!wantsPlay;refresh();},
