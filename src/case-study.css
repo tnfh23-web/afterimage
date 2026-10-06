@@ -10,3 +10,7 @@
 @keyframes case-image-swap{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.case-study [data-case-reveal]{opacity:1!important;transform:none!important;clip-path:none!important}.case-room-preview img{animation:none}}
 .case-study[data-case-motion=on] [data-case-state=pending]:is(button,a,label,.case-metadata,.case-component-study,.case-room-tabs,.case-sound-study>label,.case-room-preview>figure,.case-logo-study){transform:none}
+
+.case-cinema{margin:90px 0 0}.case-cinema figcaption{display:flex;gap:35px;justify-content:space-between;align-items:center;margin-top:28px}.case-cinema figcaption span{font-size:11px;color:#81796b;letter-spacing:.1em}.case-cinema h3{font-size:28px;margin:12px 0}.case-cinema p{max-width:650px;line-height:1.85}.case-cinema .case-outline{white-space:nowrap}@media(max-width:700px){.case-cinema{margin-top:55px}.case-cinema figcaption{align-items:flex-start;flex-direction:column;gap:18px}.case-cinema h3{font-size:23px}}
+
+.case-cinema .case-wide{aspect-ratio:3/2;object-fit:contain;object-position:center}

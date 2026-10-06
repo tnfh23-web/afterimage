@@ -16,7 +16,7 @@ export function galleryWalls(root,room,openings,mats,cube){
   const edge=(side==='north'||side==='west'?-1:1)*(alongX?room.d:room.w)/2;
   const wall=(span,height,y,along)=>{
    if(span<=0||height<=0)return;
-   if(y-height/2<1.75)obstacles.push({x:room.x+(alongX?along:edge),z:room.z+(alongX?edge:along),w:alongX?span:.65,d:alongX?.65:span});
+   if(y-height/2<1.75)obstacles.push({x:room.x+(alongX?along:edge),z:room.z+(alongX?edge:along),w:alongX?span:.65,d:alongX?.65:span,maxY:room.h});
    if(y-height/2<.1){
     const inside=edge-Math.sign(edge)*.34;
     if(alongX)cube(root,span,.065,.025,along,.033,inside,mats.grout);
@@ -76,7 +76,7 @@ export function galleryPassages(scene,passages,mats,cube,floorRects,obstacles){
 export function atriumShell(root,room,openings,mats,cube,label){
  const obstacles=galleryWalls(root,room,openings,mats,cube);
  // Four roof pieces frame a real aperture rather than a flat white ceiling.
- cube(root,5,.22,34,-5.5,8,0,mats.ceiling);cube(root,5,.22,34,5.5,8,0,mats.ceiling);
+ cube(root,5,.22,34,-5.5,8,0,mats.ceiling);cube(root,5,.22,5.5,5.5,8,-14.25,mats.ceiling);cube(root,5,.22,17.8,5.5,8,8.1,mats.ceiling);
  cube(root,6,.22,7,0,8,-13.5,mats.ceiling);cube(root,6,.22,7,0,8,13.5,mats.ceiling);
  const sky=new T.Mesh(new T.PlaneGeometry(6,20),new T.MeshBasicMaterial({color:0xcce1ed,side:T.DoubleSide}));sky.rotation.x=Math.PI/2;sky.position.y=8.65;root.add(sky);
  const white=mats.wall.clone();white.color.set(0xf7f2e8);

@@ -62,7 +62,7 @@ export function hallDetails(root,room,mats,cube,obstacles){
  // central six-metre axis clear, including the default entrance position.
  for(const side of [-1,1]){
   timberBench(root,side*5.5,0,5,Math.PI/2,mats,cube);
-  for(const z of [-7.5,4.3])olive(root,side*6.15,z,mats,cube,obstacles);
+  for(const z of side===1?[9.5,4.3]:[-7.5,4.3])olive(root,side*6.15,z,mats,cube,obstacles);
   for(let i=0;i<36;i++)cube(root,.09,4.8,.075,side*7.61,2.8,-4.3+i*.245,mats.oak);
   cube(root,.035,.02,9,side*7.5,.25,0,mats.light);
  }

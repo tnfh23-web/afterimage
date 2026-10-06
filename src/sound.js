@@ -1,3 +1,4 @@
+import {CINEMA_ID} from './cinema-layout';
 // Original, warm felt-piano-style synthesis. Audio is enabled by default and
 // allocated only on the visitor's first gesture; no external music recording.
 export function createSound(onState){
@@ -47,7 +48,7 @@ export function createSound(onState){
   if(!value){active=false;clearInterval(scheduler);if(context){master.gain.cancelScheduledValues(context.currentTime);master.gain.setTargetAtTime(0,context.currentTime,.12);fadeTimer=setTimeout(()=>{if(!active){voices.forEach(v=>{try{v.stop();}catch{}});context.suspend();}},650);}notify();return;}
   try{
    if(!context){init();context.addEventListener('statechange',notify);}active=true;notify();await context.resume();if(disposed||attempt!==request)return;
-   voices.forEach(v=>{try{v.stop();}catch{}});master.gain.cancelScheduledValues(context.currentTime);master.gain.setTargetAtTime(volume,context.currentTime,.4);
+   voices.forEach(v=>{try{v.stop();}catch{}});master.gain.cancelScheduledValues(context.currentTime);master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.4);
    nextBeat=context.currentTime+.08;beat=0;clearInterval(scheduler);scheduler=setInterval(schedule,70);schedule();notify();
   }catch(error){if(disposed||attempt!==request)return;active=false;onState('error',error.message||'소리를 켤 수 없어요.');}
  }
@@ -60,13 +61,13 @@ export function createSound(onState){
  return {
   setEnabled,
   activate(){if(active&&!disposed&&!document.hidden&&context?.state!=='running')return setEnabled(true);},
-  setVolume(value){volume=Math.max(0,Math.min(1,value));if(context&&active)master.gain.setTargetAtTime(volume,context.currentTime,.08);},
-  setRoom(value){room=value;},
+  setVolume(value){volume=Math.max(0,Math.min(1,value));if(context&&active)master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.08);},
+  setRoom(value){room=value;if(context&&active)master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.65);},
   cue(){if(active&&context?.state==='running'){piano(67,context.currentTime,.025,0,1);piano(72,context.currentTime+.07,.022,0,1.2);}},
   step(){
    if(!active||context?.state!=='running')return;
    const now=context.currentTime,source=context.createBufferSource(),low=context.createBiquadFilter(),gain=context.createGain(),pan=context.createStereoPanner();
-   source.buffer=noise;low.type='lowpass';low.frequency.value=1050;low.Q.value=.45;gain.gain.value=.13;pan.pan.value=(stepCount++%2?1:-1)*.14;
+   source.buffer=noise;low.type='lowpass';low.frequency.value=1050;low.Q.value=.45;gain.gain.value=room===CINEMA_ID ? .07 : .13;pan.pan.value=(stepCount++%2?1:-1)*.14;
    source.connect(low);low.connect(gain);gain.connect(pan);pan.connect(master);source.start(now);voices.add(source);
    const thud=context.createOscillator(),body=context.createGain();thud.frequency.setValueAtTime(120,now);thud.frequency.exponentialRampToValueAtTime(62,now+.12);
    body.gain.setValueAtTime(0,now);body.gain.linearRampToValueAtTime(.055,now+.008);body.gain.exponentialRampToValueAtTime(.0001,now+.13);
