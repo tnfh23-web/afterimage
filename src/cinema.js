@@ -30,7 +30,7 @@ export function cinemaStairs(root,mats,cube,obstacles,floorRects,label){
   }
  }
  cube(root,3.6,.22,1.5,5.28,3.99,-10.75,stone);
- cube(root,7.05,.22,1.8,8.925,8.09,-1.7,stone);
+ cube(root,6.6,.22,1.8,8.7,8.09,-1.7,stone);
  // Landing guards stop at the stair mouth and door reveal; no rail crosses
  // the walking aperture or hangs across the screening-room threshold.
  for(const z of [-2.6,-.8]){
@@ -38,7 +38,7 @@ export function cinemaStairs(root,mats,cube,obstacles,floorRects,label){
   for(let i=0;i<7;i++)cube(root,.035,1.05,.035,7.55+i*.7,8.725,z,rail);
   obstacles.push({x:9.7,z,w:4.4,d:.09,minY:8.2,maxY:10});
  }
- floorRects.push({x:8.925,z:-1.7,w:7.05,d:1.8,y:8.2});
+ floorRects.push({x:8.7,z:-1.7,w:6.6,d:1.8,y:8.2});
  floorRects.push({x:5.28,z:-10.75,w:3.6,d:1.5,y:4.1});
  return {heightAt(x,z){
   if(z>=-10&&z<=-2.6){
@@ -59,7 +59,10 @@ export function createCinema(scene,mats,cube,label,loader,floorRects,obstacles,s
  cube(root,.3,9.2,26,8,4.6,0,dark);
  for(const x of [-7.75,7.75]){
   for(let i=0;i<65;i++){const z=-12.5+i*.39;if(x<0&&Math.abs(z+3.7)<1.12)continue;cube(root,.09,7.9,.09,x,4.05,z,wood);}
-  cube(root,.035,.025,24,x,.14,0,warm);
+  if(x<0){
+   // Keep the west entry clear: no ankle-height light bar across its aperture.
+   for(const [z,length] of [[-8.45,6.9],[4.75,14.5]])cube(root,.035,.025,length,x,.14,z,warm);
+  }else cube(root,.035,.025,24,x,.14,0,warm);
  }
  for(let i=0;i<4;i++){const z=.4+i*3.6,height=(i+1)*.24;cube(root,15.5,height,13-z,0,height/2,(z+13)/2,dark);cube(root,2.25,.018,.03,0,height+.01,z,warm);}
  for(const z of [-10,-3,4,11]){cube(root,14,.08,.12,0,9.1,z,mats.black);for(const x of [-6.8,6.8])cube(root,.04,.015,.2,x,9.04,z,warm);}

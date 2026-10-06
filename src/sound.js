@@ -1,10 +1,12 @@
 import {CINEMA_ID} from './cinema-layout';
+import {createFountainAudio} from './fountain-audio';
 import {DEFAULT_VOLUME,GALLERY_MUSIC_GAIN} from './audio-levels';
 // Original, warm felt-piano-style synthesis. Audio is enabled by default and
 // allocated only on the visitor's first gesture; no external music recording.
 export function createSound(onState){
  let context,master,filter,verb,noise,active=true,volume=DEFAULT_VOLUME,room=0;
  let scheduler,fadeTimer,nextBeat=0,beat=0,disposed=false,request=0,stepCount=0,film=null;
+ let fountain,waterPosition=[0,1.75,15,0,false];
  const voices=new Set(),frequency=midi=>440*Math.pow(2,(midi-69)/12);
  // Cmaj9 / Fmaj9 / G6add9 / C6add9: open major voicings, no ominous drone.
  const chords=[[48,55,59,62,64],[53,60,64,67,69],[55,62,64,67,69],[48,55,60,62,69]];
@@ -31,6 +33,7 @@ export function createSound(onState){
   noise=context.createBuffer(1,Math.floor(context.sampleRate*.18),context.sampleRate);const samples=noise.getChannelData(0);
   for(let i=0;i<samples.length;i++)samples[i]=random()*Math.pow(1-i/samples.length,2.6);
   film?.connectAudio(context);
+  fountain=createFountainAudio(context,master);fountain.update(...waterPosition);
  }
  function schedule(){
   if(!active||context.state!=='running')return;
@@ -62,6 +65,7 @@ export function createSound(onState){
  document.addEventListener('visibilitychange',visibility);
  return {
   setEnabled,
+  water(...position){waterPosition=position;fountain?.update(...position);},
   attachFilm(value){film=value;if(context)film?.connectAudio(context);},
   activate(){if(active&&!disposed&&!document.hidden&&context?.state!=='running')return setEnabled(true);},
   setVolume(value){volume=Math.max(0,Math.min(1,value));if(context&&active)master.gain.setTargetAtTime(volume*(room===CINEMA_ID ? .12 : 1),context.currentTime,.08);},
@@ -77,6 +81,6 @@ export function createSound(onState){
    thud.connect(body);body.connect(master);thud.start(now);thud.stop(now+.14);voices.add(thud);
    thud.onended=()=>{voices.delete(thud);thud.disconnect();body.disconnect();};source.onended=()=>{voices.delete(source);source.disconnect();low.disconnect();gain.disconnect();pan.disconnect();};
   },
-  dispose(){disposed=true;active=false;clearInterval(scheduler);clearTimeout(fadeTimer);document.removeEventListener('visibilitychange',visibility);voices.forEach(v=>{try{v.stop();}catch{}});context?.close();}
+  dispose(){disposed=true;active=false;clearInterval(scheduler);clearTimeout(fadeTimer);document.removeEventListener('visibilitychange',visibility);voices.forEach(v=>{try{v.stop();}catch{}});fountain?.dispose();context?.close();}
  };
 }
