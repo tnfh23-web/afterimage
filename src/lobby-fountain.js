@@ -8,7 +8,7 @@ vec3 flowNormal(vec3 position,vec3 normal,vec2 gradient,float face){
  return normalize(abs(determinant)*normal-sign(determinant)*(gradient.x*rx+gradient.y*ry));
 }`;
 
-// Original water geometry. Shared time drives normals, jet flow and ballistic drops.
+// Original water geometry. Shared time drives ripples, a central aerated plume and ballistic spray.
 // Physical reflections use the existing environment; no transmission capture pass.
 export function createLobbyFountain(root,mats,obstacles){
  const group=new T.Group();group.name='lobby-flowing-fountain';root.add(group);
@@ -37,7 +37,7 @@ export function createLobbyFountain(root,mats,obstacles){
      float t=uFlowTime;float h=.004*sin(p.x*8.3+p.y*5.2-t*1.6)+.0025*sin(p.x*-7.1+p.y*12.4+t*2.1);
      h+=.0017*sin(p.x*21.0+p.y*16.0-t*3.0);
      if(uBasin<.5){float d=abs(length(p)-1.09);h+=.003*sin(d*39.0-t*6.4)*exp(-d*4.5);}
-     else{for(int i=0;i<6;i++){float a=float(i)*1.04719755;vec2 hit=.74*vec2(cos(a),sin(a));float d=length(p-hit);h+=.0015*sin(d*43.0-t*7.0+float(i))*exp(-d*6.0);}}
+     else{float d=length(p);h+=.003*sin(d*47.0-t*9.0)*exp(-d*3.8);h+=.002*sin(p.x*57.0+p.y*63.0+t*11.0)*exp(-d*4.0);}
      return h;
     }`;
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\nuniform float uFlowTime;uniform float uBasin;varying vec2 vWaterCoord;\n${field}\n${bumpNormal}`);
@@ -55,47 +55,67 @@ export function createLobbyFountain(root,mats,obstacles){
   const mesh=add(new T.CircleGeometry(radius,96),waterMaterial(kind),y);mesh.rotation.x=-Math.PI/2;mesh.castShadow=false;mesh.renderOrder=2;
  }
  const falling=add(new T.CylinderGeometry(1.048,1.08,.59,96,10,true),waterMaterial(2),.755);falling.castShadow=false;falling.renderOrder=3;
- const nozzle=add(new T.CylinderGeometry(.13,.14,.085,24),mats.edge,1.06);nozzle.name='six-jet-nozzle';
- for(let i=0;i<6;i++){
-  const angle=i*Math.PI/3,points=[];
-  for(let j=0;j<=32;j++){const t=j/32,r=.1+t*.64;points.push(new T.Vector3(Math.cos(angle)*r,1.055+1.8*t*(1-t),Math.sin(angle)*r));}
-  const material=new T.MeshPhysicalMaterial({color:0x496e66,roughness:.075,metalness:0,ior:1.333,clearcoat:.8,clearcoatRoughness:.08,envMapIntensity:1.3,transparent:true,opacity:.62,depthWrite:false});
-  material.name='Moving clear jet';material.userData.flowTime=time;
-  material.customProgramCacheKey=()=> 'fountain-moving-jet-v2';
-  material.onBeforeCompile=shader=>{
-   shader.uniforms.uFlowTime=time;shader.uniforms.uJetAngle={value:angle};
-   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uFlowTime;uniform float uJetAngle;varying vec2 vFlowUv;');
-   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
-    vFlowUv=uv;
-    float pulse=sin(uv.x*88.0-uFlowTime*18.0+uJetAngle);
-    transformed+=normal*pulse*.002;
-    transformed.xz+=vec2(cos(uJetAngle),sin(uJetAngle))*.008*sin(uFlowTime*3.1+uv.x*6.0+uJetAngle)*uv.x*uv.x;
-   `);
-   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform float uFlowTime;varying vec2 vFlowUv;');
-   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-    float flow=sin(vFlowUv.x*73.0-uFlowTime*17.0+sin(vFlowUv.x*19.0-uFlowTime*6.0));
-    diffuseColor.a*=.65+.35*flow;
-   `);
-  };
-  const stream=add(new T.TubeGeometry(new T.CatmullRomCurve3(points),48,.01,7,false),material);stream.castShadow=false;stream.renderOrder=4;
+
+ // A single aerated vertical plume: a turbulent liquid core surrounded by
+ // rising drops, a broken crest, falling spray and surface splash particles.
+ const nozzle=add(new T.CylinderGeometry(.1,.12,.055,24),mats.edge,1.066);nozzle.name='central-aerated-nozzle';
+ const plumeMaterial=new T.MeshPhysicalMaterial({color:0x68857f,roughness:.18,metalness:0,ior:1.333,clearcoat:.8,clearcoatRoughness:.12,envMapIntensity:.5,transparent:true,opacity:.18,depthWrite:false,side:T.DoubleSide});
+ plumeMaterial.name='Turbulent aerated water core';plumeMaterial.userData.flowTime=time;
+ plumeMaterial.customProgramCacheKey=()=> 'fountain-aerated-plume-v3';
+ plumeMaterial.onBeforeCompile=shader=>{
+  shader.uniforms.uFlowTime=time;
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uFlowTime;varying vec3 vPlumeCoord;');
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+   float height=clamp((position.y-1.05)/1.25,0.0,1.0);
+   float surge=sin(position.y*27.0-uFlowTime*18.0+position.x*13.0)*sin(position.z*21.0+position.y*17.0-uFlowTime*11.0);
+   transformed+=normal*(.006+.023*height)*surge;
+   transformed.xz+=height*height*.026*vec2(sin(uFlowTime*2.7+height*9.0),cos(uFlowTime*3.1+height*7.0));
+   vPlumeCoord=transformed;
+  `);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\nuniform float uFlowTime;varying vec3 vPlumeCoord;\n${bumpNormal}`);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+   float crest=smoothstep(1.6,2.2,vPlumeCoord.y);
+   float turbulence=sin(vPlumeCoord.y*83.0-uFlowTime*24.0+sin(vPlumeCoord.x*61.0+vPlumeCoord.z*49.0))*sin(vPlumeCoord.x*71.0-vPlumeCoord.z*57.0+uFlowTime*9.0);
+   float detail=.0015*turbulence;
+   normal=flowNormal(-vViewPosition,normal,vec2(dFdx(detail),dFdy(detail)),faceDirection);
+   nonPerturbedNormal=normal;
+   diffuseColor.a=(.08+.1*(turbulence*.5+.5))*(1.0-crest*.7);
+   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.63,.71,.69),crest*.45);
+  `);
+ };
+ const core=add(lathe([[.065,1.055],[.07,1.2],[.065,1.42],[.075,1.62],[.08,1.82],[.095,2.02],[.11,2.14],[.09,2.23],[.05,2.28],[0,2.3]]),plumeMaterial);core.name='central-turbulent-plume';core.castShadow=false;core.renderOrder=4;
+ const count=5600,positions=new Float32Array(count*3),params=new Float32Array(count*4),kinds=new Float32Array(count),sizes=new Float32Array(count);
+ const random=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n);};
+ for(let i=0;i<count;i++){
+  params.set([random(i*4),random(i*4+1)*Math.PI*2,random(i*4+2),random(i*4+3)],i*4);
+  kinds[i]=i<2800?0:i<4400?1:i<5000?2:i<5400?3:4;
+  sizes[i]=.01+random(i+19000)*.018;
  }
- // Visible droplets travel through each upper arc, then break up on the descent.
- // Additional droplets fall from the rim under gravity and briefly splash.
- const count=6*72+168,positions=new Float32Array(count*3),seeds=new Float32Array(count),angles=new Float32Array(count),kinds=new Float32Array(count);
- for(let i=0;i<count;i++){seeds[i]=((i%72)+.5)/72;angles[i]=i<432?Math.floor(i/72)*Math.PI/3:i*2.39996;kinds[i]=i<432?0:1;}
- const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));geometry.setAttribute('aSeed',new T.BufferAttribute(seeds,1));geometry.setAttribute('aAngle',new T.BufferAttribute(angles,1));geometry.setAttribute('aKind',new T.BufferAttribute(kinds,1));
+ const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));geometry.setAttribute('aParams',new T.BufferAttribute(params,4));geometry.setAttribute('aKind',new T.BufferAttribute(kinds,1));geometry.setAttribute('aSize',new T.BufferAttribute(sizes,1));
  const droplets=new T.Points(geometry,new T.ShaderMaterial({uniforms:{uFlowTime:time},transparent:true,depthWrite:false,
-  vertexShader:`uniform float uFlowTime;attribute float aSeed;attribute float aAngle;attribute float aKind;varying float vFade;varying float vStretch;
-   void main(){float t=fract(aSeed+uFlowTime*(aKind<.5?1.35:1.9));vec3 p;float r;
-    if(aKind<.5){r=.1+t*.64;p.y=1.055+1.8*t*(1.0-t);r+=.008*sin(uFlowTime*3.1+t*6.0+aAngle)*t*t;vFade=.3+.6*smoothstep(.35,.9,t);vStretch=1.0;}
-    else{r=1.048+.048*t+.004*sin(aAngle*8.0+t*14.0);p.y=1.053-.59*t*t;vFade=sin(t*3.14159)*.45;vStretch=.5;}
-    p.x=r*cos(aAngle);p.z=r*sin(aAngle);vec4 view=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*view;
-    gl_PointSize=clamp((aKind<.5?8.0:6.0)/-view.z,1.1,3.3);
+  vertexShader:`uniform float uFlowTime;attribute vec4 aParams;attribute float aKind;attribute float aSize;varying float vFade;varying float vFoam;
+   void main(){float angle=aParams.y;float spread=aParams.z;float variety=aParams.w;float rate=aKind<.5?.94:aKind<1.5?1.6:aKind<2.5?1.5:aKind<3.5?3.05:1.9;
+    float t=fract(aParams.x+uFlowTime*rate);float r;vec3 p;vFoam=0.0;
+    if(aKind<.5){float age=t*1.03;float speed=4.85+variety*.3;r=.015+(.1+spread*.36)*age*.8;p.y=1.055+speed*age-4.9*age*age;vFade=.68+.3*sin(t*3.14159);vFoam=smoothstep(1.6,2.15,p.y);}
+    else if(aKind<1.5){r=.14+spread*.54*t+.035*sin(t*9.0+angle);p.y=1.055+(1.09+variety*.16)*(1.0-t*t);vFade=.75*sin(t*3.14159);vFoam=.65;}
+    else if(aKind<2.5){float age=t*.6;r=.08+(.35+spread*.75)*age;p.y=2.18+variety*.14+(1.0+spread*.2)*age-4.9*age*age;vFade=.7*sin(t*3.14159);vFoam=1.0;}
+    else if(aKind<3.5){float age=t*.328;r=.15+spread*.54+age*(.3+variety*.3);p.y=1.055+1.6*age-4.9*age*age;vFade=.62*sin(t*3.14159);vFoam=.9;}
+    else{r=1.048+.048*t;p.y=1.053-.59*t*t;vFade=.32*sin(t*3.14159);vFoam=.15;}
+    p.x=r*cos(angle);p.z=r*sin(angle);
+    p.xz+=.015*sin(uFlowTime*2.1+p.y*8.0+angle)*vec2(cos(angle*3.0),sin(angle*2.0));
+    if(aKind<3.5&&p.y<1.054)vFade=0.0;
+    vec4 view=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*view;
+    gl_PointSize=clamp(aSize*650.0/max(.1,-view.z),1.0,6.0);
    }`,
-  fragmentShader:`varying float vFade;varying float vStretch;void main(){vec2 p=gl_PointCoord-.5;p.x/=vStretch;float alpha=1.0-smoothstep(.06,.5,length(p));vec3 shade=mix(vec3(.16,.26,.23),vec3(.92,.97,.94),smoothstep(-.3,.2,p.x));gl_FragColor=vec4(shade,alpha*vFade);
+  fragmentShader:`varying float vFade;varying float vFoam;void main(){vec2 p=gl_PointCoord*2.0-1.0;float radius=length(p);if(radius>1.0)discard;
+   float dome=sqrt(max(0.0,1.0-radius*radius));vec3 normal=vec3(p,dome);
+   float highlight=pow(max(0.0,dot(normal,normalize(vec3(-.4,.7,.6)))),14.0);
+   vec3 shade=mix(vec3(.035,.07,.063),vec3(.46,.59,.56),dome*.6)+highlight*.8;
+   shade=mix(shade,vec3(.85,.9,.87),vFoam*.18);
+   gl_FragColor=vec4(shade,(1.0-smoothstep(.65,1.0,radius))*vFade);
    #include <colorspace_fragment>
   }`,
- }));droplets.name='ballistic-moving-water-drops';droplets.frustumCulled=false;droplets.renderOrder=5;group.add(droplets);
+ }));droplets.name='aerated-plume-and-splash-drops';droplets.frustumCulled=false;droplets.renderOrder=5;group.add(droplets);
  obstacles.push({x:0,z:0,w:4.32,d:4.32,minY:0,maxY:1.6});
  return {group,update(elapsed,moving){time.value=moving?elapsed:0;}};
 }
