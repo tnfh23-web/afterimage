@@ -39,12 +39,13 @@ function foliage(root,style,height,radius,mats,decor,seed){
   if(style==='reed'||style==='fern'){
    const spread=radius*Math.sqrt((i%19)/18),length=height*(.56+(i%7)/15);
    dummy.position.set(Math.cos(angle)*spread*.32,.02,Math.sin(angle)*spread*.32);
-   dummy.rotation.set(style==='fern'?.55+t*.9:.08+t*.46,angle,Math.sin(angle)*.35);
+   // Apply local leaf tilt before the radial yaw, so all directions grow upward.
+   dummy.rotation.set(style==='fern'?.25+t*.42:.07+t*.25,angle,Math.sin(angle)*.12,'YXZ');
    dummy.scale.set(style==='reed'?.22:.33,length,1);
   }else{
    const y=height*(.44+.53*t),spread=radius*Math.sqrt(Math.max(.08,1-Math.pow((t-.54)*1.7,2)))*(i%4===0?.52:1);
    dummy.position.set(Math.cos(angle)*spread,y,Math.sin(angle)*spread);
-   dummy.rotation.set(Math.sin(angle)*.55,angle+.7,-.65+((i+seed)%9)/9*1.3);
+   dummy.rotation.set(Math.sin(angle)*.38,angle+.7,-.4+((i+seed)%9)/9*.8,'YXZ');
    dummy.scale.set(style==='olive'?.18:.37,style==='olive'?.34:.57,1);
   }
   dummy.updateMatrix();const variant=i%2;leaves[variant].setMatrixAt(indices[variant]++,dummy.matrix);
