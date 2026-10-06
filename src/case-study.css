@@ -14,3 +14,6 @@
 .case-cinema{margin:90px 0 0}.case-cinema figcaption{display:flex;gap:35px;justify-content:space-between;align-items:center;margin-top:28px}.case-cinema figcaption span{font-size:11px;color:#81796b;letter-spacing:.1em}.case-cinema h3{font-size:28px;margin:12px 0}.case-cinema p{max-width:650px;line-height:1.85}.case-cinema .case-outline{white-space:nowrap}@media(max-width:700px){.case-cinema{margin-top:55px}.case-cinema figcaption{align-items:flex-start;flex-direction:column;gap:18px}.case-cinema h3{font-size:23px}}
 
 .case-cinema .case-wide{aspect-ratio:3/2;object-fit:contain;object-position:center}
+
+/* Keep smoothing inside the process dialog; touch retains native momentum. */
+.case-study.lenis{scroll-behavior:auto;overscroll-behavior:contain}

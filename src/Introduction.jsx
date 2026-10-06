@@ -5,6 +5,7 @@ import {ATRIUM_ID} from './building-layout';
 import {CINEMA_ID} from './cinema-layout';
 import ExhibitionPlan from './ExhibitionPlan';
 import {useCaseMotion} from './use-case-motion';
+import {useCaseScroll} from './use-case-scroll';
 import './case-study.css';
 function LogoUnavailable(){return <div><p>입체 로고를 불러오지 못했어요.</p><button className="case-text" onClick={()=>location.reload()}>새로고침</button></div>;}
 // A visitor may still have the previous bundle open during a deployment.
@@ -14,10 +15,11 @@ const chapters=['개요','과제와 목표','콘셉트와 아이덴티티','디�
 const shot=id=>assetUrl(`/process/room-${String(id+1).padStart(2,'0')}.png?v=cinema-seating-v7`);
 export default function Introduction({onClose,onEnter,onGo,ready,failed,sound}){
  const ref=useRef(null),[active,setActive]=useState(0),[selected,setSelected]=useState(0);
+ const smooth=useCaseScroll(ref);
  useCaseMotion(ref);
  useEffect(()=>{const before=document.activeElement,el=ref.current;el.querySelector('button')?.focus({preventScroll:true});const key=e=>{if(e.key==='Escape'){e.preventDefault();onClose();}if(e.key==='Tab'){const items=[...el.querySelectorAll('button,a,input,[tabindex="0"]')].filter(item=>!item.disabled),first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};el.addEventListener('keydown',key);return()=>{el.removeEventListener('keydown',key);before?.focus({preventScroll:true});};},[]);
  useEffect(()=>{const el=ref.current;let frame;const update=()=>{frame=null;const edge=el.getBoundingClientRect().top+120;let chapter=0;el.querySelectorAll('[data-chapter]').forEach(section=>{if(section.getBoundingClientRect().top<=edge)chapter=Number(section.dataset.chapter);});setActive(chapter);};const scroll=()=>{if(!frame)frame=requestAnimationFrame(update);};el.addEventListener('scroll',scroll,{passive:true});update();return()=>{el.removeEventListener('scroll',scroll);cancelAnimationFrame(frame);};},[]);
- const jump=index=>{setActive(index);ref.current.querySelector(`[data-chapter="${index}"]`).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});};
+ const jump=index=>{setActive(index);const root=ref.current,target=root.querySelector(`[data-chapter="${index}"]`),top=root.scrollTop+target.getBoundingClientRect().top-root.getBoundingClientRect().top-root.querySelector('.case-index').offsetHeight-12;if(smooth.current)smooth.current.scrollTo(top,{duration:1.1});else root.scrollTo({top,behavior:'instant'});};
  const title=(n,label,text)=><div className="case-heading"><span>{String(n+1).padStart(2,'0')} / {label}</span><h2>{text}</h2></div>;
  return <section ref={ref} className="introduction case-study" role="dialog" aria-modal="true" aria-label="전시 소개">
   <div className="case-top"><span>AFTERIMAGE</span><button onClick={onClose}>전시로 돌아가기</button></div>

@@ -18,7 +18,7 @@ This project contains a fictional exhibition. Its artist names and artwork descr
 | “Afterglow / 여운의 문” film and poster | Original three-act Three.js motion artwork (luminous portals, folded metallic ribbons, expanding light fragments) with project-authored Web Audio felt-piano music, recorded in-browser with MediaRecorder as H.264/AAC MP4. The poster is a frame from the same artwork. No external video, stock music, paid generation service, or imported model. Authoring source: design/film-production. |
 | Second-floor hall, seats and stairs | Project-authored Three.js geometry; repeated chair parts use instanced meshes. |
 | Actual process screenshots | Browser captures of the running project, not concept renderings |
-| Fonts / libraries | Pretendard SIL OFL; Helvetiker original license in public/fonts; Three.js MIT; React MIT; Vite MIT |
+| Fonts / libraries | Pretendard SIL OFL; Helvetiker original license in public/fonts; Three.js MIT; React MIT; Vite MIT; Lenis MIT |
 
 The evaluated Veiled Phantom Bust by 3DBOX42 (Printables, CC BY-NC 4.0) was **not used** in this app or included in the source archive. No commercial permission for it was assumed. No derivative mesh was generated from that STL.
 
