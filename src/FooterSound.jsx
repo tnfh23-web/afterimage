@@ -8,7 +8,7 @@ export default function FooterSound({sound}){
   <div id="exhibition-volume" className="footer-volume" popover="auto" aria-label="전시 음량 조절">
    <div className="volume-heading"><label htmlFor="exhibition-volume-range">전체 음량</label><output htmlFor="exhibition-volume-range">{Math.round(sound.volume*100)}%</output><button popoverTarget="exhibition-volume" popoverTargetAction="hide" aria-label="음량 조절 닫기">닫기</button></div>
    <input id="exhibition-volume-range" aria-label="전체 음량" type="range" min="0" max="1" step=".01" value={sound.volume} onChange={e=>sound.changeVolume(Number(e.target.value))}/>
-   <p>배경음 · 영상 · 발소리 · 물소리{!sound.enabled?' · 소리 꺼짐':''}</p>
+   <p>배경음 · 영상 · 발소리{!sound.enabled?' · 소리 꺼짐':''}</p>
   </div>
  </div>;
 }

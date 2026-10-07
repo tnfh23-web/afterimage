@@ -15,6 +15,5 @@ export function useSound(room){
   toggle:()=>controller.current?.setEnabled(state!=='waiting'&&state!=='playing'&&state!=='paused'),
   changeVolume:value=>{setVolume(value);controller.current?.setVolume(value);},
   attachFilm:film=>controller.current?.attachFilm(film),
-  water:(...args)=>controller.current?.water(...args),
   cue:()=>controller.current?.cue(),step:()=>controller.current?.step()};
 }
